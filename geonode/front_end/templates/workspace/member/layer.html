@@ -1,0 +1,260 @@
+{% extends 'site_base.html' %}
+{% load i18n %}
+{% load jsonify %}
+
+{% block title %}{% trans "Member Workspace" %}{% endblock %}
+
+{% comment %}
+{% block subnav %}
+<li><a href="{% url "actstream_object_feed" content_type_id=ctype.pk  object_id=actor.pk %}">RSS</a></li>
+<li><a href="{% url "actstream_object_feed_atom" content_type_id=ctype.pk  object_id=actor.pk %}">ATOM</a></li>
+{% endblock %}
+{% endcomment %}
+
+{% block body_outer %}
+
+<style>
+        body{
+            background-color: #fff;
+        }
+        .container
+        {
+            width: 100%;
+        }
+        
+    .nav-sidebar {
+        margin-right: -21px;
+        margin-bottom: 20px;
+        margin-left: -20px;
+    }
+    footer
+    {
+        z-index: 1008;
+    }
+    .main
+    {
+        background-color: #fff;
+    }
+    .nav-sidebar > .active > a, .nav-sidebar > .active > a:hover, .nav-sidebar > .active > a:focus {
+        color: #fff;
+        background-color: #428bca;
+    }
+    .d-title
+    {
+        padding-bottom: 30px;
+    }
+    </style>
+
+       
+
+        <div class="row" ng-app="workspaceApp" ng-controller="MemberLayerController">
+
+
+                <div class="col-sm-2 col-xs-1 col-md-2 workspace-sidebar">
+                        <ul class="nav nav-sidebar">
+                                <li role="presentation" class="active"><a href="{% url "member-workspace-layer" %}"><i class="fa fa-clone" aria-hidden="true"></i><span>{% trans "Layers" %}</span></a></li>
+                                <li role="presentation"><a href="{% url "member-workspace-map" %}"><i class="fa fa-map" aria-hidden="true"></i><span>{% trans "Maps" %}</span></a></li>
+                                <li role="presentation"><a href="{% url "member-workspace-document" %}"><i class="fa fa-file" aria-hidden="true"></i><span>{% trans "Documents" %}</span></a></li>
+                                </ul>
+                </div>
+
+            <div class="col-sm-10 col-sm-offset-2 col-xs-11 col-xs-offset-1 col-md-10 col-md-offset-2 main">
+                <h1 class="d-title" style="margin: 0"> {% trans "Member Workspace" %}</h1>
+
+                <h1> hi jaha [{printme}] </h1>
+                <div class="gd-content">
+                    <div class="row">
+                        <div class="col-md-12">
+
+                            <div>
+                                <div class="alert alert-warning alert-dismissable">
+                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                                    <strong>Warning!</strong> Please update mandatory fields, missing some information!
+                                </div>
+                            </div>
+                            <ul class="nav nav-tabs">
+                                <li class="active"><a href="#draft" data-toggle="tab">{% trans "Draft" %}</a></li>
+                                <li><a href="#pending" id="pending_list_layers"
+                                       data-toggle="tab">{% trans "Pending" %}</a></li>
+                                <li><a href="#denied" id="denied_list_layers" data-toggle="tab">{% trans "Denied" %}</a>
+                                </li>
+                                <li><a href="#active" id="active_list_layers" data-toggle="tab">{% trans "Active" %}</a>
+                                </li>
+                            </ul>
+
+                            <div class="col-md-4">
+                                <input class="form-control mr-sm-2" type="search" ng-model="searchString" placeholder="Search" aria-label="Search">
+                            </div>
+                            <br><br><br>
+
+                            <div class="tab-content">
+
+
+
+                                <article id="draft" class="tab-pane active">
+                                    <ul class="no-style-list">
+                                            <div class="table-responsive">
+                                        <table class="table table-hover table-responsive" style="background:#ffffff;">
+                                            <thead>
+                                            <tr>
+                                                <th>Serial No</th>
+                                                <th>Layer Title</th>
+                                                <th>Organization</th>
+                                                <th>Layer Creation Date</th>
+                                                <th>Message</th>
+                                                <th></th>
+                                            </tr>
+                                            </thead>
+
+                                            <tbody ng-repeat="i in items | searchFor:searchString">
+
+                                                <th> [{i.sl}] </th>
+                                                <th> [{i.title}] </th>
+                                                <th> [{i.org}] </th>
+                                                <th> [{i.creationDate}] </th>
+                                                <th> [{i.message}] </th>
+                                                <th> continue for approval btn </th>
+                                                <th> delete layer btn </th>
+
+                                            </tbody>
+                                            <!--<tbody id="showallMemberDraftlayers">-->
+
+                                            <!--</tbody>-->
+
+                                        </table>
+                                        </div>
+                                        <div id="showallMemberDraftlayerspag">
+
+                                        </div>
+                                    </ul>
+                                </article>
+
+
+
+                                <article id="pending" class="tab-pane">
+                                    <ul class="no-style-list">
+                                        <table class="table table-hover" style="background:#ffffff;">
+                                            <thead>
+                                            <tr>
+                                                <th>Serial No</th>
+                                                <th>Layer Title</th>
+                                                <th>Organization</th>
+                                                <th>Request Date</th>
+                                                <th>Message</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody ng-repeat="i in items | searchFor:searchString">
+
+                                            <th> [{i.sl}] </th>
+                                            <th> [{i.title}] </th>
+                                            <th> [{i.org}] </th>
+                                            <th> [{i.creationDate}] </th>
+                                            <th> [{i.message}] </th>
+
+                                            </tbody>
+                                        </table>
+                                        <div id="showallMemberDraftlayerspag_panding">
+
+                                        </div>
+                                    </ul>
+                                </article>
+                                <article id="denied" class="tab-pane">
+                                    <ul class="no-style-list">
+                                        <table class="table table-hover" style="background:#ffffff;">
+                                            <thead>
+                                            <tr>
+                                                <th>Serial No</th>
+                                                <th>Layer Title</th>
+                                                <th>Organization</th>
+                                                <th>Who Denied</th>
+                                                <th>Deny Date</th>
+                                                <th>Message</th>
+                                                <th></th>
+                                            </tr>
+                                            </thead>
+                                            <tbody ng-repeat="i in items | searchFor:searchString">
+
+                                            <th> [{i.sl}] </th>
+                                            <th> [{i.title}] </th>
+                                            <th> [{i.org}] </th>
+                                            <th>[{i.whoDenied}]]</th>
+                                            <th> [{i.denyDate}] </th>
+                                            <th> [{i.message}] </th>
+
+                                            </tbody>
+                                        </table>
+                                        <div id="showallMemberDraftlayerspag_denied">
+
+                                        </div>
+                                    </ul>
+                                </article>
+                                <article id="active" class="tab-pane">
+                                    <ul class="no-style-list">
+                                        <table class="table table-hover" style="background:#ffffff;">
+                                            <thead>
+                                            <tr>
+                                                <th>Serial No</th>
+                                                <th>Layer Title</th>
+                                                <th>Organization</th>
+                                                <th>Activator</th>
+                                                <th>Activation Date</th>
+                                                <th>Message</th>
+                                                <th>Layer Edit</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody ng-repeat="i in items | searchFor:searchString">
+
+                                            <th> [{i.sl}] </th>
+                                            <th> [{i.title}] </th>
+                                            <th> [{i.org}] </th>
+                                            <th> [{i.activator}] </th>
+                                            <th> [{i.activationDate}] </th>
+                                            <th> [{i.message}] </th>
+                                            <th> edit button </th>
+
+                                            </tbody>
+                                        </table>
+                                        <div id="showallMemberDraftlayerspag_active">
+
+                                        </div>
+                                    </ul>
+                                </article>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+              </div>
+
+
+
+{% include "layer_templates/_delete_layer.html" %}
+{% endblock %}
+
+{% block extra_script %}
+{{ block.super }}
+<script>
+function deleteLayer(id){
+        //console.log(id);
+        var sleID = parseInt(id);
+        $("#testid").html(id);
+        $('#_delete_layer').modal('show');
+        $('#Layer_Del').attr('action', '../../layers/'+ sleID +'/delete');
+    }
+
+$(function () {
+    $("#follow_button, #unfollow_button").click(function () {
+        $.post($(this).attr("href"), {});
+        $(this).parent().find("#follow_button, #unfollow_button").toggle();
+        return false
+    });
+});
+</script>
+
+<script src="{{ STATIC_URL }}workspace/js/apps.js"></script>
+<script src="{{ STATIC_URL }}workspace/js/controllers.js"></script>
+<script src="{{ STATIC_URL }}workspace/js/filters.js"></script>
+
+{% endblock %}

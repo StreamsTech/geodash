@@ -27,7 +27,7 @@ class MemberWorkspaceLayer(ListView):
     """
 
     model = Layer
-    template_name = 'member/layer.html'
+    template_name = 'workspace/member/layer.html'
 
     def get_context_data(self, *args, **kwargs):
         context = super(ListView, self).get_context_data(*args, **kwargs)

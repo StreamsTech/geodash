@@ -1,0 +1,513 @@
+{% extends 'site_base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Member Workspace" %}{% endblock %}
+
+{% comment %}
+{% block subnav %}
+<li><a href="{% url "actstream_object_feed" content_type_id=ctype.pk  object_id=actor.pk %}">RSS</a></li>
+<li><a href="{% url "actstream_object_feed_atom" content_type_id=ctype.pk  object_id=actor.pk %}">ATOM</a></li>
+{% endblock %}
+{% endcomment %}
+
+{% block body_outer %}
+
+<style>
+        body{
+            background-color: #fff;
+        }
+        .container
+        {
+            width: 100%;
+        }
+
+    .nav-sidebar {
+        margin-right: -21px;
+        margin-bottom: 20px;
+        margin-left: -20px;
+    }
+    footer
+    {
+        z-index: 1008;
+    }
+    .main
+    {
+        background-color: #fff;
+    }
+    .nav-sidebar > .active > a, .nav-sidebar > .active > a:hover, .nav-sidebar > .active > a:focus {
+        color: #fff;
+        background-color: #428bca;
+    }
+    .d-title
+    {
+        padding-bottom: 30px;
+    }
+    </style>
+
+        <div class="row">
+
+            <div class="col-sm-2 col-xs-1 col-md-2 workspace-sidebar">
+                        <ul class="nav nav-sidebar">
+                                <li role="presentation" ><a href="{% url "member-workspace-layer" %}"><i class="fa fa-clone" aria-hidden="true"></i><span>{% trans "Layers" %}</span></a></li>
+                                <li role="presentation" ><a href="{% url "member-workspace-map" %}"><i class="fa fa-map" aria-hidden="true"></i><span>{% trans "Maps" %}</span></a></li>
+                                <li role="presentation" class="active"><a href="{% url "member-workspace-document" %}"><i class="fa fa-file" aria-hidden="true"></i><span>{% trans "Documents" %}</span></a></li>
+                                </ul>
+                </div>
+
+
+                <div class="col-sm-10 col-sm-offset-2 col-xs-11 col-xs-offset-1 col-md-10 col-md-offset-2 main">
+
+                        <h1 class="d-title" style="margin: 0"> {% trans "Member Workspace" %}</h1>
+                        <div class="gd-content">
+                                <div class="row">
+                                  <div class="col-md-12">
+
+                                    <ul class="nav nav-tabs">
+                                      <li class="active"><a href="#draft" data-toggle="tab">{% trans "Draft" %}</a></li>
+                                      <li><a href="#pending" id="pending_list_docs" data-toggle="tab">{% trans "Pending" %}</a></li>
+                                      <li><a href="#denied"  id="denied_list_docs" data-toggle="tab">{% trans "Denied" %}</a></li>
+                                      <li><a href="#active" id="active_list_docs" data-toggle="tab">{% trans "Active" %}</a></li>
+                                    </ul>
+                                    <div class="tab-content">
+                                      <article id="draft" class="tab-pane active">
+                                        <ul class="no-style-list">
+
+                                                <div class="table-responsive">
+                                            <table class="table table-hover" style="background:#ffffff;">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Serial No</th>
+                                                        <th>Document Title</th>
+                                                        <th>Organization</th>
+                                                        <th>Document Creation Date</th>
+                                                        <th></th>
+                                                    </tr>
+                                                </thead>
+                                                    <tbody id="showallMemberDraftdocs">
+
+                                                    </tbody>
+
+                                            </table>
+                                            </div>
+
+                                            <div id="showallMemberDraftdocspag">
+
+                                            </div>
+                                        </ul>
+                                      </article>
+                                      <article id="pending" class="tab-pane">
+                                        <ul class="no-style-list">
+                                            <table class="table table-hover" style="background:#ffffff;">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Serial No</th>
+                                                        <th>Document Title</th>
+                                                        <th>Organization</th>
+                                                        <th>Request Date</th>
+                                                    </tr>
+                                                </thead>
+
+                                                    <tbody id="allMemberDraftdocs_pen">
+
+                                                    </tbody>
+
+                                            </table>
+                                            <div id="showallMemberDraftdocspag_panding">
+
+                                            </div>
+                                        </ul>
+                                      </article>
+                                      <article id="denied" class="tab-pane">
+                                        <ul class="no-style-list">
+                                            <table class="table table-hover" style="background:#ffffff;">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Serial No</th>
+                                                        <th>Document Title</th>
+                                                        <th>Organization</th>
+                                                        <th>Who Denied</th>
+                                                        <th>Deny Date</th>
+                                                        <th></th>
+                                                    </tr>
+                                                </thead>
+
+                                                    <tbody id="allMemberDraftdocs_denied">
+
+                                                    </tbody>
+
+                                            </table>
+                                            <div id="showallMemberDraftdocspag_denied">
+
+                                            </div>
+                                        </ul>
+                                      </article>
+                                      <article id="active" class="tab-pane ">
+                                        <ul class="no-style-list">
+                                            <table class="table table-hover" style="background:#ffffff;">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Serial No</th>
+                                                        <th>Document Title</th>
+                                                        <th>Organization</th>
+                                                        <th>Activator</th>
+                                                        <th>Activation Date</th>
+                                                        <th>Document Edit</th>
+                                                    </tr>
+                                                </thead>
+
+                                                    <tbody id="allMemberDraftdocs_active">
+
+                                                    </tbody>
+
+                                            </table>
+                                            <div id="showallMemberDraftdocspag_active">
+
+                                            </div>
+                                        </ul>
+                                      </article>
+                                    </div>
+                                  </div>
+                                </div>
+                                </div>
+
+
+                </div>
+              </div>
+
+
+
+
+
+{% include "document_templates/_delete_document.html" %}
+{% endblock %}
+
+{% block extra_script %}
+{{ block.super }}
+<script>
+function deleteDocument(id){
+        //console.log(id);
+        var sleID = parseInt(id);
+        $("#testid").html(id);
+        $('#_delete_document').modal('show');
+        $('#Doc_Del').attr('action', '../../documents/'+ sleID +'/delete');
+    }
+
+$(function () {
+    $("#follow_button, #unfollow_button").click(function () {
+        $.post($(this).attr("href"), {});
+        $(this).parent().find("#follow_button, #unfollow_button").toggle();
+        return false
+    });
+});
+</script>
+
+<script type="text/javascript" language="JavaScript">
+        function showMemberDraftDoc(targeturl){
+            var limit = 25;
+            if(targeturl== undefined){
+                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_document_api' %}?limit="+ limit +"&resource_state=draft_list&user_type=member";
+            }
+            else{
+                var url = targeturl;
+            }
+            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
+                $.ajax({
+                    cache: true,
+                    type: 'GET',
+                    url: url,
+                    data: {},
+                    dataType: "json",
+                    success: function(jsondata) {
+                        console.log("success");
+                        //console.log(JSON.stringify(jsondata));
+                    var data = eval(jsondata.objects);
+                    var meta = eval(jsondata.meta);
+                    var t_count = meta.total_count;
+                    var t_limit = meta.limit;
+                    var t_offset = meta.offset;
+                    var t_next = meta.next;
+                    var t_previous = meta.previous;
+                        //alert(t_offset);
+                    var output='';
+                    var outputpag='';
+                    var offset = meta.offset;
+                  $.each(data, function(i, item) {
+                    offset = offset + 1;
+                    output+='<tr>';
+                    output+='<td>'+ offset +'</td>';
+                    output+='<td><a href='+ item.detail_url +'>'+ item.title+'</a></td>';
+                    output+='<td>'+ item.group +'</td>';
+                    output+='<td>'+ item.date_created +'</td>';
+                    output+='<td><a href="'+ item.detail_url +'?user_role=member" class="btn btn-gd-primary"> {% trans "Continue for Approval" %}</a>';
+                    output+='<button type="button" class="btn btn-gd-primary" onclick="deleteDocument('+ item.id +')" style="color:#fff;margin-left:6px">{% trans "Delete Document" %}</button> <br>';
+                    output+='</td>';
+                    output+='</tr>';
+                  });
+                  outputpag+='<div>';
+                  outputpag+='<nav>';
+                  outputpag+='<ul class="pagination pull-left">';
+                  var nexturl = meta.next;
+                  //alert(t_count);
+                  var previousurl = meta.previous;
+                  if(previousurl){
+                  outputpag+='<li><a href="javascript:;" id="previousMemberDraftDocs"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
+                  }
+                  if(nexturl){
+                  outputpag+='<li><a href="javascript:;" id="nextMemberDraftDocs"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
+                    }
+                  outputpag+='</ul>';
+                  outputpag+='</nav>';
+                  outputpag+='</div>';
+                   $("#showallMemberDraftdocs").html(output);
+                   $("#showallMemberDraftdocspag").html(outputpag);
+                   $("#nextMemberDraftDocs").click(function(){
+                        showMemberDraftDoc(nexturl)
+                   });
+                   $("#previousMemberDraftDocs").click(function(){
+                        showMemberDraftDoc(previousurl)
+                   });
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        console.log("error");
+                    }
+                });
+        }
+
+        $(document).ready(function(){
+            showMemberDraftDoc();
+        });
+ </script>
+<script type="text/javascript" language="JavaScript">
+        function showLimitDatadocs_pending(targeturl){
+            var limit = 25;
+            if(targeturl== undefined){
+                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_document_api' %}?limit="+ limit +"&resource_state=pending_list&user_type=member";
+            }
+            else{
+                var url = targeturl;
+            }
+            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
+                $.ajax({
+                    cache: true,
+                    type: 'GET',
+                    url: url,
+                    data: {},
+                    dataType: "json",
+                    success: function(jsondata) {
+                        console.log("success");
+                        console.log(JSON.stringify(jsondata));
+                    var data = eval(jsondata.objects);
+                    var meta = eval(jsondata.meta);
+                    var t_count = meta.total_count;
+                    var t_limit = meta.limit;
+                    var t_offset = meta.offset;
+                    var t_next = meta.next;
+                    var t_previous = meta.previous;
+                        //alert(t_offset);
+                    var output='';
+                    var outputpag='';
+                    var i =1;
+                  var offset = meta.offset;
+                  $.each(data, function(i, item) {
+                  //alert(item.date_created).
+                    offset = offset + 1;
+                    output+='<tr>';
+                    output+='<td>'+ offset +'</td>';
+                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
+                    output+='<td>'+ item.group +'</td>';
+                    output+='<td>'+ item.date_updated +'</td>';
+                    output+='</tr>';
+                  });
+                  outputpag+='<div>';
+                  outputpag+='<nav>';
+                  outputpag+='<ul class="pagination pull-left">';
+                  var nexturl = meta.next;
+                  //alert(t_count);
+                  var previousurl = meta.previous;
+                  if(previousurl){
+                  outputpag+='<li><a href="javascript:;" id="previousMemberDraftdocs_pen"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
+                  }
+                  if(nexturl){
+                  outputpag+='<li><a href="javascript:;" id="nextMemberDraftdocs_pen"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
+                    }
+                  outputpag+='</ul>';
+                  outputpag+='</nav>';
+                  outputpag+='</div>';
+                   $("#allMemberDraftdocs_pen").html(output);
+                   $("#showallMemberDraftdocspag_panding").html(outputpag);
+                   $("#nextMemberDraftdocs_pen").click(function(){
+                        showLimitDatadocs_pending(nexturl)
+                   });
+                   $("#previousMemberDraftdocs_pen").click(function(){
+                        showLimitDatadocs_pending(previousurl)
+                   });
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        console.log("error");
+                    }
+                });
+        }
+
+        $(document).ready(function(){
+            $("#pending_list_docs").click(function(){
+                showLimitDatadocs_pending();
+                });
+         });
+ </script>
+<script type="text/javascript" language="JavaScript">
+        function showLimitDatadocs_denied(targeturl){
+            var limit = 25;
+            if(targeturl== undefined){
+                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_document_api' %}?limit="+ limit +"&resource_state=denied_list&user_type=member";
+            }
+            else{
+                var url = targeturl;
+            }
+            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
+                $.ajax({
+                    cache: true,
+                    type: 'GET',
+                    url: url,
+                    data: {},
+                    dataType: "json",
+                    success: function(jsondata) {
+                        console.log("success");
+                        console.log(JSON.stringify(jsondata));
+                    var data = eval(jsondata.objects);
+                    var meta = eval(jsondata.meta);
+                    var t_count = meta.total_count;
+                    var t_limit = meta.limit;
+                    var t_offset = meta.offset;
+                    var t_next = meta.next;
+                    var t_previous = meta.previous;
+                        //alert(t_offset);
+                    var output='';
+                    var outputpag='';
+                  var offset = meta.offset;
+                  $.each(data, function(i, item) {
+                    offset = offset + 1;
+                    output+='<tr>';
+                    output+='<td>'+ offset +'</td>';
+                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
+                    output+='<td>'+ item.group +'</td>';
+                    output+='<td>'+ item.last_auditor +'</td>';
+                    output+='<td>'+ item.date_updated +'</td>';
+                    output+='<td><a href="'+ item.detail_url +'?user_role=member" class="btn btn-gd-primary"> {% trans "Edit and Push Again" %}</a></td>';
+                    output+='</tr>';
+                  });
+                  outputpag+='<div>';
+                  outputpag+='<nav>';
+                  outputpag+='<ul class="pagination pull-left">';
+                  var nexturl = meta.next;
+                  //alert(t_count);
+                  var previousurl = meta.previous;
+                  if(previousurl){
+                  outputpag+='<li><a href="javascript:;" id="previousMemberDraftdocs_denied"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
+                  }
+                  if(nexturl){
+                  outputpag+='<li><a href="javascript:;" id="nextMemberDraftdocs_denied"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
+                    }
+                  outputpag+='</ul>';
+                  outputpag+='</nav>';
+                  outputpag+='</div>';
+                   $("#allMemberDraftdocs_denied").html(output);
+                   $("#showallMemberDraftdocspag_denied").html(outputpag);
+                   $("#nextMemberDraftdocs_denied").click(function(){
+                        showLimitDatadocs_denied(nexturl)
+                   });
+                   $("#previousMemberDraftdocs_denied").click(function(){
+                        showLimitDatadocs_denied(previousurl)
+                   });
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        console.log("error");
+                    }
+                });
+        }
+
+        $(document).ready(function(){
+            $("#denied_list_docs").click(function(){
+                showLimitDatadocs_denied();
+                });
+         });
+ </script>
+
+<script type="text/javascript" language="JavaScript">
+        function showLimitDatadocs_active(targeturl){
+            var limit = 25;
+            if(targeturl== undefined){
+                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_document_api' %}?limit="+ limit +"&resource_state=active_list&user_type=member";
+            }
+            else{
+                var url = targeturl;
+            }
+            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
+                $.ajax({
+                    cache: true,
+                    type: 'GET',
+                    url: url,
+                    data: {},
+                    dataType: "json",
+                    success: function(jsondata) {
+                        console.log("success");
+                        console.log(JSON.stringify(jsondata));
+                    var data = eval(jsondata.objects);
+                    var meta = eval(jsondata.meta);
+                    var t_count = meta.total_count;
+                    var t_limit = meta.limit;
+                    var t_offset = meta.offset;
+                    var t_next = meta.next;
+                    var t_previous = meta.previous;
+                        //alert(t_offset);
+                    var output='';
+                    var outputpag='';
+                    var i =1;
+                    var offset = meta.offset;
+                  $.each(data, function(i, item) {
+                    offset = offset + 1;
+                    output+='<tr>';
+                    output+='<td>'+ offset +'</td>';
+                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
+                    output+='<td>'+ item.group +'</td>';
+                    output+='<td>'+ item.last_auditor +'</td>';
+                    output+='<td>'+ item.date_updated +'</td>';
+                    output+='<td><a href="'+ item.detail_url +'?user_role=member" class="btn btn-gd-primary"> {% trans "Edit" %}</a></td>';
+                    output+='</tr>';
+                  });
+                  outputpag+='<div>';
+                  outputpag+='<nav>';
+                  outputpag+='<ul class="pagination pull-left">';
+                  var nexturl = meta.next;
+                  //alert(t_count);
+                  var previousurl = meta.previous;
+                  if(previousurl){
+                  outputpag+='<li><a href="javascript:;" id="previousMemberDraftdocs_active"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
+                  }
+                  if(nexturl){
+                  outputpag+='<li><a href="javascript:;" id="nextMemberDraftdocs_active"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
+                    }
+                  outputpag+='</ul>';
+                  outputpag+='</nav>';
+                  outputpag+='</div>';
+                   $("#allMemberDraftdocs_active").html(output);
+                   $("#showallMemberDraftdocspag_active").html(outputpag);
+                   $("#nextMemberDraftdocs_active").click(function(){
+                        showLimitDatadocs_active(nexturl)
+                   });
+                   $("#previousMemberDraftdocs_active").click(function(){
+                        showLimitDatadocs_active(previousurl)
+                   });
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        console.log("error");
+                    }
+                });
+        }
+
+        $(document).ready(function(){
+            $("#active_list_docs").click(function(){
+                showLimitDatadocs_active();
+                });
+         });
+ </script>
+{% endblock %}

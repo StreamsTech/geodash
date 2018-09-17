@@ -1,0 +1,747 @@
+{% extends 'site_base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Admin Workspace" %}{% endblock %}
+
+{% comment %}
+{% block subnav %}
+<li><a href="{% url "actstream_object_feed" content_type_id=ctype.pk  object_id=actor.pk %}">RSS</a></li>
+<li><a href="{% url "actstream_object_feed_atom" content_type_id=ctype.pk  object_id=actor.pk %}">ATOM</a></li>
+{% endblock %}
+{% endcomment %}
+
+{% block body_outer %}
+
+<style>
+    body{
+        background-color: #fff;
+    }
+    .container
+    {
+        width: 100%;
+    }
+    .sidebar {
+        position: fixed;
+        top: 84px;
+        bottom: 0;
+        left: 0;
+        z-index: 1000;
+        display: block;
+        padding: 20px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        background-color: #384450;
+        border-right: 1px solid #eee;
+    }
+    .sidebar ul li a {
+        color: #fff;
+        border-bottom: 1px solid #495a67;
+    }
+    .sidebar ul li a:hover {
+        background-color: #283139;
+    }
+    .sidebar ul li a i{
+        margin-right: 10px;
+    }
+.nav-sidebar {
+    margin-right: -21px;
+    margin-bottom: 20px;
+    margin-left: -20px;
+}
+footer
+{
+    z-index: 1008;
+}
+.main
+{
+    background-color: #fff;
+}
+.nav-sidebar > .active > a, .nav-sidebar > .active > a:hover, .nav-sidebar > .active > a:focus {
+    color: #fff;
+    background-color: #428bca;
+}
+.d-title
+{
+    padding-bottom: 30px;
+}
+</style>
+
+
+
+    <div class="row">
+        <div class="col-sm-2 col-xs-1 col-md-2 workspace-sidebar">
+       
+ 
+
+        <!-- <ul class="nav nav-sidebar">
+                <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
+                <li><a href="#">Reports</a></li>
+                <li><a href="#">Analytics</a></li>
+                <li><a href="#">Export</a></li>
+              </ul> -->
+
+
+        <ul class="nav nav-sidebar">
+            <li role="presentation"><a href="{% url "admin-workspace-layer" %}"><i class="fa fa-clone" aria-hidden="true"></i><span>{% trans "Layers" %}</span></a></li>
+            <li role="presentation" class="active"><a href="{% url "admin-workspace-map" %}"><i class="fa fa-map" aria-hidden="true"></i><span>{% trans "Maps" %}</span></a></li>
+            <li role="presentation"><a href="{% url "admin-workspace-document" %}"><i class="fa fa-file" aria-hidden="true"></i><span>{% trans "Documents" %}</span></a></li>
+            <li role="presentation"><a href="{% url "admin-workspace-user-list" %}" ><i class="fa fa-users" aria-hidden="true"></i><span>{% trans "User List" %}</span></a></li>
+            <li role="presentation"><a href="{% url "create-user" %}" ><i class="fa fa-plus-circle" aria-hidden="true"></i><span>{% trans "Create User" %}</span></a></li>
+              </ul>
+
+
+      </div>
+      <div class="col-sm-10 col-sm-offset-2 col-xs-11 col-xs-offset-1 col-md-10 col-md-offset-2 main">
+        <h1 class="d-title" style="margin: 0">{% trans "Admin Workspace" %}</h1>
+
+        <div class="gd-content">
+     
+         
+    
+           
+                   
+                   
+                          
+                                    <div class="row">
+                                      <div class="col-md-12">
+                                       
+                                          
+                                          <div id="viewuserlist"></div>
+                                          <div id="viewuserlist_none">
+                                            <ul class="nav nav-tabs">
+                                              <li class="active"><a href="#user-approval-request" data-toggle="tab">{% trans "User Approval Request" %}</a></li>
+                                              <li><a href="#approved" id="Approved_list_layers_admin" data-toggle="tab">{% trans "Approved" %}</a></li>
+                                              <li><a href="#user-drafts" id="Admin_userdraft_maps" data-toggle="tab">{% trans "User Drafts" %}</a></li>
+                                              <li><a href="#denied-maps" id="Admin_dined_mapslist" data-toggle="tab">{% trans "Denied Maps" %}</a></li>
+                                            </ul>
+                                            <div class="tab-content">
+                                              <article id="user-approval-request" class="tab-pane active">
+                                                <ul class="no-style-list">
+                                                    <a class="btn btn-gd-primary disabled" id="approve-all-button" style="margin-bottom: 10px" onclick="approveAll()">{% trans "Approve All" %}</a>
+                                                    
+                                                    <div class="table-responsive">
+                                                    <table class="table table-hover table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>
+                                                                    <input type="checkbox" value=""
+                                                                           id="select-all-map">
+                                                                </th>
+                                                                <th>Serial No</th>
+                                                                <th>Map Title</th>
+                                                                <th>Organization</th>
+                                                                <th>Tried</th>
+                                                                <th>Who Requested</th>
+                                                                <th>Date of Request</th>
+                                                                <th>Approve/Deny Map</th>
+                                                                <!--<th>Denied Map</th>-->
+                                                            </tr>
+                                                        </thead>
+
+                                                            <tbody id="showallAdminDraftmaps">
+
+                                                            </tbody>
+
+                                                    </table>
+                                                    </div>
+                                                    <div id="showallAdminDraftmapspag">
+                        
+                                                    </div>
+                                                </ul>
+                                              </article>
+                                              <article id="approved" class="tab-pane">
+                                                <ul class="no-style-list">
+                                                    <table class="table table-hover table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Serial No</th>
+                                                                <th>Map Title</th>
+                                                                <th>Organization</th>
+                                                                <th>Who Requested</th>
+                                                                <th>Who Approved</th>
+                                                                <th>Approve Date</th>
+                                                                <th>Map Edit</th>
+                                                                <th>Unpublish Map</th>
+                                                            </tr>
+                                                        </thead>
+
+                                                            <tbody id="allAdminDraftmaps_pen">
+
+                                                            </tbody>
+
+                                                    </table>
+                                                    <div id="showallAdminDraftmapspag_panding">
+                        
+                                                    </div>
+                                                </ul>
+                                              </article>
+                                              <article id="user-drafts" class="tab-pane">
+                                                <ul class="no-style-list">
+                                                    <table class="table table-hover table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Serial No</th>
+                                                                <th>Map Title</th>
+                                                                <th>Organization</th>
+                                                                <th>User Name</th>
+                                                                <th>Map Creation Date</th>
+                                                                <th>Map Delete</th>
+                                                            </tr>
+                                                        </thead>
+
+                                                            <tbody id="allAdminDraftmaps_denied">
+
+                                                            </tbody>
+
+                                                    </table>
+                                                    <div id="showallAdminDraftmapspag_denied">
+                        
+                                                    </div>
+                                                </ul>
+                                              </article>
+                        
+                                              <article id="denied-maps" class="tab-pane">
+                                                <ul class="no-style-list">
+                                                    <table class="table table-hover table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Serial No</th>
+                                                                <th>Map Title</th>
+                                                                <th>Organization</th>
+                                                                <th>Who Requested</th>
+                                                                <th>Who Denied</th>
+                                                                <th>Denied Date</th>
+                                                            </tr>
+                                                        </thead>
+
+                                                            <tbody id="allAdminDraftMaps_active">
+
+                                                            </tbody>
+
+                                                    </table>
+                                                    <div id="showallAdminDraftMapspag_active">
+                        
+                                                    </div>
+                                                </ul>
+                                              </article>
+                                            </div>
+                                          </div>
+                                      </div>
+                                    </div>
+                             
+                 
+                 
+    
+    
+           
+        </div>
+       
+  
+    </div>
+
+
+
+    
+{% include "map_templates/_delete_map.html" %}
+{% endblock %}
+
+{% block extra_script %}
+{{ block.super }}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $("#user_list").click(function(){
+                $("#viewuserlist_none").css("display", "none");
+                //alert("test");
+                //url = '{% url 'api_dispatch_list' api_name='api' resource_name='profiles' %}'+ '?group='+ '{{ object.slug }}';
+                url = '{% url 'api_dispatch_list' api_name='api' resource_name='profiles' %}';
+                 $.ajax({
+                        cache: false,
+                        type: 'GET',
+                        url: url,
+                        data: {},
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function(jsondata) {
+                            console.log("success");
+                            //console.log(JSON.stringify(jsondata));
+                            var data = eval(jsondata.objects);
+                        var output='';
+                            output +='<hr />';
+                      $.each(data, function(i, profile) {
+                        //alert(item.date);
+                            output +='<article>';
+                            output +='<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">';
+                            output +='<div class="grid-container">';
+                            output +='<div class="top-content text-center">';
+                            output +='<div class="avater">';
+                            output +='<a href="'+ profile.profile_detail_url +'?content=layers">';
+                            output +='<div class="avater-img">';
+                            output +='<div class="avater-img-mid">';
+                            output +='<div class="text-center">';
+                            output +='<img height="100" class="img-circle" src="'+ profile.avatar_100 +'" alt="Profile Image"/>';
+                            output +='</div>';
+                            output +='</div>';
+                            output +='</div>';
+                            output +='<div class="txt" style="min-height: 60px;">';
+                                if(profile.first_name != ''){
+                            output +=''+ profile.first_name+' '+  profile.last_name +' ';
+                                }else{
+                            output +=''+ profile.username +' ';
+                                }
+                            output +='</div>';
+                            output +='</a>';
+                            output +='</div>';
+                            output +='<div class="details pro-org" title="'+profile.organization+'">';
+                                    if(profile.organization){
+                            output +='<div>';
+                            output +=''+ profile.organization +'';
+                            output +='</div>';
+                                    }else{
+                            output +='<div>';
+                            output +='No Organization info';
+                            output +='</div>';
+                                    }
+                            output +='</div>';
+                            output +='</div>';
+                            output +='<div class="bottom-content">';
+                            output +='<div class="row">';
+                            output +='<div class="profile-items text-center">';
+                            output +='<ul class="list-inline">';
+                            output +='<li>';
+                            output +='<a href="'+ profile.profile_detail_url +'?content=layers" >';
+                            output +='<span class="fa-layers-group fa-stack fa-rotate-90" style="font-size:12px;">';
+                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: 0;"></i>';
+                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: -.15em;color:#fff;"></i>';
+                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: -.3em;"></i>';
+                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: -.45em;color:#fff;"></i>';
+                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: -.6em;"></i>';
+                            output +='</span>';
+                            output +=''+ profile.layers_count +'';
+                            output +='</a>';
+                            output +='</li>';
+                            output +='<li>';
+                            output +='<a href="'+ profile.profile_detail_url +'?content=documents">';
+                            output +='<i class="fa fa-file-text-o"></i> ';
+                            output +=''+ profile.documents_count +'';
+                            output +='</a>';
+                            output +='</li>';
+                            output +='<li>';
+                            output +='<a href="'+ profile.profile_detail_url +'?content=maps">';
+                            output +='<i class="fa fa-map-marker"></i> ';
+                            output +=''+ profile.maps_count +'';
+                            output +='</a>';
+                            output +='</li>';
+                            output +='</ul>';
+                            output +='</div>';
+                            output +='</div>';
+                            output +='</div>';
+                            output +='</div>';
+                            output +='</div>';
+                            output +='</article>';
+                        });
+                        $("#viewuserlist").append(output);
+                        },
+                        error: function(xhr, ajaxOptions, thrownError) {
+                            console.log("error");
+                        }
+                 });
+
+            });
+        });
+    </script>
+<script>
+function mapLayer(id){
+        //console.log(id);
+        var sleID = parseInt(id);
+        $("#testid").html(id);
+        $('#_delete_map').modal('show');
+        $('#Map_Del').attr('action', '../../maps/'+ sleID +'/delete');
+    }
+
+$(function () {
+    $("#follow_button, #unfollow_button").click(function () {
+        $.post($(this).attr("href"), {});
+        $(this).parent().find("#follow_button, #unfollow_button").toggle();
+        return false
+    });
+});
+</script>
+
+<script type="text/javascript" language="JavaScript">
+        var csrftoken = "{{ csrf_token }}";
+        $("#select-all-map").change(function () {
+            var status = $(this).is(":checked") ? true : false;
+            $('.map-to-approve').prop('checked', status);
+            enableOrDisableApproveAllButton();
+        });
+        function enableOrDisableApproveAllButton() {
+            var selecteds = [];
+            $('.map-to-approve:checked').each(function () {
+                selecteds.push($(this).val());
+            });
+            if(selecteds.length> 0) {
+                $('#approve-all-button').removeClass('disabled');
+            }else {
+                $('#approve-all-button').addClass('disabled');
+            }
+        }
+        function disableAllContinueForApprovalButton(condition) {
+            if (condition) {
+                $('.approve-button').addClass('disabled');
+            } else {
+                $('.approve-button').removeClass('disabled');
+            }
+        }
+        function error(jqXHR, textStatus, errorThrown) {
+            $('#approve-all-button').removeClass('disabled');
+            enableOrDisableApproveAllButton();
+            $.toaster(errorThrown, 'Error', 'danger');
+        }
+        function success(data, textStatus, jqXHR) {
+            $.toaster('All Maps Approved', 'Success', 'success');
+            $('#approve-all-button').removeClass('disabled');
+            enableOrDisableApproveAllButton();
+            showAdminDraftMap();
+
+        }
+        function postAllMapForApproval(mapIds) {
+            var data = {
+                "map_ids": mapIds
+            };
+            $.ajax({
+                url: "/api/maps/approve-multiple-maps/",
+                method: "PUT",
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                error: error,
+                success: success
+            });
+        }
+        function approveAll(e) {
+            var selecteds = [];
+            $('.map-to-approve:checked').each(function () {
+                selecteds.push($(this).val());
+            });
+            $('#approve-all-button').addClass('disabled');
+            disableAllContinueForApprovalButton(true);
+            postAllMapForApproval(selecteds);
+        }
+        function showAdminDraftMap(targeturl){
+            var limit = 25;
+            if(targeturl== undefined){
+                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_map_api' %}?limit="+ limit +"&resource_state=user_approval_request_list&user_type=admin";
+            }
+            else{
+                var url = targeturl;
+            }
+            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
+                $.ajax({
+                    cache: true,
+                    type: 'GET',
+                    url: url,
+                    data: {},
+                    dataType: "json",
+                    success: function(jsondata) {
+                        console.log("success");
+                        //console.log(JSON.stringify(jsondata));
+                    var data = eval(jsondata.objects);
+                    var meta = eval(jsondata.meta);
+                    var t_count = meta.total_count;
+                    var t_limit = meta.limit;
+                    var t_offset = meta.offset;
+                    var t_next = meta.next;
+                    var t_previous = meta.previous;
+                        //alert(t_offset);
+                    var output='';
+                    var outputpag='';
+                  var offset = meta.offset;
+                  $.each(data, function(i, item) {
+                    offset = offset + 1;
+                    output+='<tr>';
+                    output+='<td>'+ '<input type="checkbox" value='+item.id+' class="map-to-approve" onclick="enableOrDisableApproveAllButton();">' +'</td>';
+                    output+='<td>'+ offset +'</td>';
+                    output+='<td><a href='+ item.detail_url +'>'+ item.title+'</a></td>';
+                    output+='<td>'+ item.group +'</td>';
+                    output+='<td>'+ item.current_iteration +'</td>';
+                    output+='<td>'+ item.owner +'</td>';
+                    output+='<td>'+ item.date_updated +'</td>';
+                    output+='<td><a href="'+ item.detail_url +'?user_role=manager" class="btn btn-gd-primary approve-button">{% trans "Continue to Approve/Deny" %}</a></td>';
+                    output+='</tr>';
+                  });
+                  outputpag+='<div>';
+                  outputpag+='<nav>';
+                  outputpag+='<ul class="pagination pull-left">';
+                  var nexturl = meta.next;
+                  //alert(t_count);
+                  var previousurl = meta.previous;
+                  if(previousurl){
+                  outputpag+='<li><a href="javascript:;" id="previousAdminDraftmaps"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
+                  }
+                  if(nexturl){
+                  outputpag+='<li><a href="javascript:;" id="nextAdminDraftmaps"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
+                    }
+                  outputpag+='</ul>';
+                  outputpag+='</nav>';
+                  outputpag+='</div>';
+                   $("#showallAdminDraftmaps").html(output);
+                   $("#showallAdminDraftmapspag").html(outputpag);
+                   $("#nextAdminDraftmaps").click(function(){
+                        showAdminDraftMap(nexturl)
+                   });
+                   $("#previousAdminDraftmaps").click(function(){
+                        showAdminDraftMap(previousurl)
+                   });
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        console.log("error");
+                    }
+                });
+        }
+
+        $(document).ready(function(){
+            showAdminDraftMap();
+        });
+ </script>
+<script type="text/javascript" language="JavaScript">
+        function showAdminDataMaps_Approve(targeturl){
+            var limit = 25;
+            if(targeturl== undefined){
+                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_map_api' %}?limit="+ limit +"&resource_state=approved_list&user_type=admin";
+            }
+            else{
+                var url = targeturl;
+            }
+            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
+                $.ajax({
+                    cache: true,
+                    type: 'GET',
+                    url: url,
+                    data: {},
+                    dataType: "json",
+                    success: function(jsondata) {
+                        console.log("success");
+                        //console.log(JSON.stringify(jsondata));
+                    var data = eval(jsondata.objects);
+                    var meta = eval(jsondata.meta);
+                    var t_count = meta.total_count;
+                    var t_limit = meta.limit;
+                    var t_offset = meta.offset;
+                    var t_next = meta.next;
+                    var t_previous = meta.previous;
+                        //alert(t_offset);
+                    var output='';
+                    var outputpag='';
+                    var i =1;
+                    var offset = meta.offset;
+                  $.each(data, function(i, item) {
+                  //alert(item.date_created)
+                    offset = offset + 1;
+                    output+='<tr>';
+                    output+='<td>'+ offset +'</td>';
+                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
+                    output+='<td>'+ item.group +'</td>';
+                    output+='<td>'+ item.owner +'</td>';
+                    output+='<td>'+ item.last_auditor +'</td>';
+                    output+='<td>'+ item.date_updated +'</td>';
+                    output+='<td><a href="'+ item.detail_url +'" class="btn btn-gd-primary">{% trans "Edit" %}</a></td>';
+                    output+='<td><a href="'+ item.detail_url +'?user_role=manager" class="btn btn-gd-primary">{% trans "Unapproved" %}</a></td>';
+                    output+='</tr>';
+                  });
+                  outputpag+='<div>';
+                  outputpag+='<nav>';
+                  outputpag+='<ul class="pagination pull-left">';
+                  var nexturl = meta.next;
+                  //alert(t_count);
+                  var previousurl = meta.previous;
+                  if(previousurl){
+                  outputpag+='<li><a href="javascript:;" id="previousAdminDraftmaps_pen"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
+                  }
+                  if(nexturl){
+                  outputpag+='<li><a href="javascript:;" id="nextAdminDraftmaps_pen"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
+                    }
+                  outputpag+='</ul>';
+                  outputpag+='</nav>';
+                  outputpag+='</div>';
+                   $("#allAdminDraftmaps_pen").html(output);
+                   $("#showallAdminDraftmapspag_panding").html(outputpag);
+                   $("#nextAdminDraftmaps_pen").click(function(){
+                        showAdminDataMaps_Approve(nexturl)
+                   });
+                   $("#previousAdminDraftmaps_pen").click(function(){
+                        showAdminDataMaps_Approve(previousurl)
+                   });
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        console.log("error");
+                    }
+                });
+        }
+
+        $(document).ready(function(){
+            $("#Approved_list_layers_admin").click(function(){
+                showAdminDataMaps_Approve();
+                });
+         });
+ </script>
+<script type="text/javascript" language="JavaScript">
+        function showAdminDataMaps_draft(targeturl){
+            var limit = 25;
+            if(targeturl== undefined){
+                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_map_api' %}?limit="+ limit +"&resource_state=user_draft_list&user_type=admin";
+            }
+            else{
+                var url = targeturl;
+            }
+            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
+                $.ajax({
+                    cache: true,
+                    type: 'GET',
+                    url: url,
+                    data: {},
+                    dataType: "json",
+                    success: function(jsondata) {
+                        console.log("success");
+                        //console.log(JSON.stringify(jsondata));
+                    var data = eval(jsondata.objects);
+                    var meta = eval(jsondata.meta);
+                    var t_count = meta.total_count;
+                    var t_limit = meta.limit;
+                    var t_offset = meta.offset;
+                    var t_next = meta.next;
+                    var t_previous = meta.previous;
+                        //alert(t_offset);
+                    var output='';
+                    var outputpag='';
+                    var i =1;
+                  var offset = meta.offset;
+                  $.each(data, function(i, item) {
+                    offset = offset + 1;
+                    output+='<tr>';
+                    output+='<td>'+ offset +'</td>';
+                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
+                    output+='<td>'+ item.group +'</td>';
+                    output+='<td>'+ item.owner +'</td>';
+                    output+='<td>'+ item.date_created +'</td>';
+                    output+='<td><button type="button" class="btn btn-gd-primary" onclick="mapLayer('+ item.id +')" style="color:#fff;">{% trans "Delete Map" %}</button></td>';
+                    output+='</tr>';
+                  });
+                  outputpag+='<div>';
+                  outputpag+='<nav>';
+                  outputpag+='<ul class="pagination pull-left">';
+                  var nexturl = meta.next;
+                  //alert(t_count);
+                  var previousurl = meta.previous;
+                  if(previousurl){
+                  outputpag+='<li><a href="javascript:;" id="previousAdminDraftmaps_denied"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
+                  }
+                  if(nexturl){
+                  outputpag+='<li><a href="javascript:;" id="nextAdminDraftmaps_denied"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
+                    }
+                  outputpag+='</ul>';
+                  outputpag+='</nav>';
+                  outputpag+='</div>';
+                   $("#allAdminDraftmaps_denied").html(output);
+                   $("#showallAdminDraftmapspag_denied").html(outputpag);
+                   $("#nextAdminDraftmaps_denied").click(function(){
+                        showAdminDataMaps_draft(nexturl)
+                   });
+                   $("#previousAdminDraftmaps_denied").click(function(){
+                        showAdminDataMaps_draft(previousurl)
+                   });
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        console.log("error");
+                    }
+                });
+        }
+
+        $(document).ready(function(){
+            $("#Admin_userdraft_maps").click(function(){
+                showAdminDataMaps_draft();
+                });
+         });
+ </script>
+<script type="text/javascript" language="JavaScript">
+        function showAdminDataMaps_denied(targeturl){
+            var limit = 25;
+            if(targeturl== undefined){
+                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_map_api' %}?limit="+ limit +"&resource_state=denied_list&user_type=admin";
+            }
+            else{
+                var url = targeturl;
+            }
+            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
+                $.ajax({
+                    cache: true,
+                    type: 'GET',
+                    url: url,
+                    data: {},
+                    dataType: "json",
+                    success: function(jsondata) {
+                        console.log("success");
+                        console.log(JSON.stringify(jsondata));
+                    var data = eval(jsondata.objects);
+                    var meta = eval(jsondata.meta);
+                    var t_count = meta.total_count;
+                    var t_limit = meta.limit;
+                    var t_offset = meta.offset;
+                    var t_next = meta.next;
+                    var t_previous = meta.previous;
+                        //alert(t_offset);
+                    var output='';
+                    var outputpag='';
+                    var i =1;
+                  var offset = meta.offset;
+                  $.each(data, function(i, item) {
+                    offset = offset + 1;
+                    output+='<tr>';
+                    output+='<td>'+ offset +'</td>';
+                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
+                    output+='<td>'+ item.group +'</td>';
+                    output+='<td>'+ item.owner +'</td>';
+                    output+='<td>'+ item.last_auditor +'</td>';
+                    output+='<td>'+ item.date_updated +'</td>';
+                    output+='</tr>';
+                  });
+                  outputpag+='<div>';
+                  outputpag+='<nav>';
+                  outputpag+='<ul class="pagination pull-left">';
+                  var nexturl = meta.next;
+                  //alert(t_count);
+                  var previousurl = meta.previous;
+                  if(previousurl){
+                  outputpag+='<li><a href="javascript:;" id="previousAdminDraftMaps_active"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
+                  }
+                  if(nexturl){
+                  outputpag+='<li><a href="javascript:;" id="nextAdminDraftMaps_active"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
+                    }
+                  outputpag+='</ul>';
+                  outputpag+='</nav>';
+                  outputpag+='</div>';
+                   $("#allAdminDraftMaps_active").html(output);
+                   $("#showallAdminDraftMapspag_active").html(outputpag);
+                   $("#nextAdminDraftMaps_active").click(function(){
+                        showAdminDataMaps_denied(nexturl)
+                   });
+                   $("#previousAdminDraftMaps_active").click(function(){
+                        showAdminDataMaps_denied(previousurl)
+                   });
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        console.log("error");
+                    }
+                });
+        }
+
+        $(document).ready(function(){
+            $("#Admin_dined_mapslist").click(function(){
+                showAdminDataMaps_denied();
+                });
+         });
+ </script>
+
+{% endblock %}

@@ -1,0 +1,787 @@
+{% extends 'site_base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Admin Workspace" %}{% endblock %}
+
+{% comment %}
+{% block subnav %}
+<li><a href="{% url "actstream_object_feed" content_type_id=ctype.pk  object_id=actor.pk %}">RSS</a></li>
+<li><a href="{% url "actstream_object_feed_atom" content_type_id=ctype.pk  object_id=actor.pk %}">ATOM</a></li>
+{% endblock %}
+{% endcomment %}
+
+{% block body_outer %}
+
+<style>
+        body{
+            background-color: #fff;
+        }
+        .container
+        {
+            width: 100%;
+        }
+        .sidebar {
+        position: fixed;
+        top: 84px;
+        bottom: 0;
+        left: 0;
+        z-index: 1000;
+        display: block;
+        padding: 20px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        background-color: #384450;
+        border-right: 1px solid #eee;
+    }
+    .sidebar ul li a {
+        color: #fff;
+        border-bottom: 1px solid #495a67;
+    }
+    .sidebar ul li a:hover {
+        background-color: #283139;
+    }
+    .sidebar ul li a i{
+        margin-right: 10px;
+    }
+    .nav-sidebar {
+        margin-right: -21px;
+        margin-bottom: 20px;
+        margin-left: -20px;
+    }
+    footer
+    {
+        z-index: 1008;
+    }
+    .main
+    {
+        background-color: #fff;
+    }
+    .nav-sidebar > .active > a, .nav-sidebar > .active > a:hover, .nav-sidebar > .active > a:focus {
+        color: #fff;
+        background-color: #428bca;
+    }
+    .d-title
+    {
+        padding-bottom: 30px;
+    }
+    </style>
+    {% if FRONT_END_SETTINGS.attribute_permission %}
+        <style>
+            .block {
+                text-align: center;
+                vertical-align: middle;
+            }
+
+            .circle {
+                background: rgba(0, 72, 156, 0.97);
+                border-radius: 200px;
+                color: white;
+                height: 100px;
+                font-weight: bold;
+                width: 100px;
+                display: table;
+                margin: 20px auto;
+            }
+
+            .circle p {
+                vertical-align: middle;
+                display: table-cell;
+            }
+        </style>
+    {% endif %}
+
+    <div class="row">
+
+        <div class="col-sm-2 col-xs-1 col-md-2 workspace-sidebar">
+                    
+             
+             
+                     <ul class="nav nav-sidebar">
+                             <li role="presentation" class="active"><a href="{% url "admin-workspace-layer" %}"><i class="fa fa-clone" aria-hidden="true"></i><span>{% trans "Layers" %}</span></a></li>
+                             <li role="presentation"><a href="{% url "admin-workspace-map" %}"><i class="fa fa-map" aria-hidden="true"></i><span>{% trans "Maps" %}</span></a></li>
+                             <li role="presentation"><a href="{% url "admin-workspace-document" %}"><i class="fa fa-file" aria-hidden="true"></i><span>{% trans "Documents" %}</span></a></li>
+                             <li role="presentation"><a href="{% url "admin-workspace-user-list" %}" ><i class="fa fa-users" aria-hidden="true"></i><span>{% trans "User List" %}</span></a></li>
+                             <li role="presentation"><a href="{% url "create-user" %}" ><i class="fa fa-plus-circle" aria-hidden="true"></i><span>{% trans "Create User" %}</span></a></li>
+                           </ul>
+             
+             
+                   </div>
+
+
+
+                   <div class="col-sm-10 col-sm-offset-2 col-xs-11 col-xs-offset-1 col-md-10 col-md-offset-2 main">
+                <h1 class="d-title" style="margin: 0">{% trans "Admin Workspace" %}</h1>
+                <div class="gd-content">
+                        
+                                <div class="row">
+                                  <div class="col-md-12">
+                                      
+                                      
+                                      <div id="viewuserlist"></div>
+                                      {% if FRONT_END_SETTINGS.attribute_permission %}
+                                          <div class="container">
+                                              <div class="row">
+                                                  <div class="col-md-5 block">
+                                                      <div class="circle pull-right">
+                                                          <p>{{ total_layer }} Layers</p>
+                                                      </div>
+                                                  </div>
+                                                  <div class="col-md-2 block">
+                                                      <div class="circle">
+                                                          <p>{% widthratio total_layer_size 1024 1 %} MB</p>
+                                                      </div>
+                                                  </div>
+                                                  <div class="col-md-5 block">
+                                                      <div class="circle pull-left">
+                                                          <p>1 Archived</p>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      {% endif %}
+                    
+                                      <div id="viewuserlist_none">
+                                            <ul class="nav nav-tabs">
+                                              <li class="active"><a href="#user-approval-request" data-toggle="tab">{% trans "User Approval Request" %}</a></li>
+                                              <li><a href="#approved" id="Approved_list_layers_admin" data-toggle="tab">{% trans "Approved" %}</a></li>
+                                              <li><a href="#user-drafts" id="Admin_userdraft" data-toggle="tab">{% trans "User Drafts" %}</a></li>
+                                              <li><a href="#denied-layers" id="Admin_dined_list" data-toggle="tab">{% trans "Denied Layers" %}</a></li>
+                                            </ul>
+                                        <div class="tab-content">
+                                          <article id="user-approval-request" class="tab-pane active">
+                                            <ul class="no-style-list">
+                                                <a class="btn btn-gd-primary disabled" id="approve-all-button" style="margin-bottom: 10px" onclick="approveAll()">{% trans "Approve All" %}</a>
+                                                
+                                                <div class="table-responsive">
+                                                <table class="table table-hover" style="background:#ffffff;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>
+                                                                <input type="checkbox" value="" id="select-all-layer">
+                                                            </th>
+                                                            <th>Serial No</th>
+                                                            <th>Layer Title</th>
+                                                            <th>Organization</th>
+                                                            <th>Tried</th>
+                                                            <th>Who Requested</th>
+                                                            <th>Date of Request</th>
+                                                            <th>Approve/Deny Layer</th>
+                                                            <!--<th>Denied Layer</th>-->
+                                                        </tr>
+                                                    </thead>
+
+                                                        <tbody id="showallAdminDraftlayers">
+
+                                                        </tbody>
+
+                                                </table>
+                                            </div>
+
+                                                <div id="showallAdminDraftlayerspag">
+                    
+                                                </div>
+                                            </ul>
+                                          </article>
+                                          <article id="approved" class="tab-pane">
+                                            <ul class="no-style-list">
+                                                    <table class="table table-hover table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Serial No</th>
+                                                            <th>Layer Title</th>
+                                                            <th>Organization</th>
+                                                            <th>Who Requested</th>
+                                                            <th>Who Approved</th>
+                                                            <th>Approve Date</th>
+                                                            <th>Layer Edit</th>
+                                                            <th>Layer Delete</th>
+                                                            <th>Unpublish Layer</th>
+                                                        </tr>
+                                                    </thead>
+
+                                                        <tbody id="allAdminDraftlayers_pen">
+
+                                                        </tbody>
+
+                                                </table>
+                                                <div id="showallAdminDraftlayerspag_panding">
+                    
+                                                </div>
+                                            </ul>
+                                          </article>
+                                          <article id="user-drafts" class="tab-pane">
+                                            <ul class="no-style-list">
+                                                    <table class="table table-hover table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Serial No</th>
+                                                            <th>Layer Title</th>
+                                                            <th>Organization</th>
+                                                            <th>User Name</th>
+                                                            <th>Layer Creation Date</th>
+                                                            <th>Layer Delete</th>
+                                                        </tr>
+                                                    </thead>
+
+                                                        <tbody id="allAdminDraftlayers_denied">
+
+                                                        </tbody>
+
+                                                </table>
+                                                <div id="showallAdminDraftlayerspag_denied">
+                    
+                                                </div>
+                                            </ul>
+                                          </article>
+                    
+                                          <article id="denied-layers" class="tab-pane" style="background:#ffffff;">
+                                            <ul class="no-style-list">
+                                                    <table class="table table-hover table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Serial No</th>
+                                                            <th>Layer Title</th>
+                                                            <th>Organization</th>
+                                                            <th>Who Requested</th>
+                                                            <th>Who Denied</th>
+                                                            <th>Denied Date</th>
+                                                        </tr>
+                                                    </thead>
+
+                                                        <tbody id="allAdminDraftlayers_active">
+
+                                                        </tbody>
+
+                                                </table>
+                                                <div id="showallAdminDraftlayerspag_active">
+                    
+                                                </div>
+                                            </ul>
+                                          </article>
+                                        </div>
+                                      </div>
+                                  </div>
+                                </div>
+                         
+                </div>
+              </div>
+
+        
+    </div>
+{% include "layer_templates/_delete_layer.html" %}
+{% endblock %}
+
+{% block extra_script %}
+
+{{ block.super }}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $("#user_list").click(function(){
+                $("#viewuserlist_none").css("display", "none");
+                //url = '{% url 'api_dispatch_list' api_name='api' resource_name='profiles' %}'+ '?group={{gg}}';
+                url = '{% url 'api_dispatch_list' api_name='api' resource_name='profiles' %}';
+                 $.ajax({
+                        cache: false,
+                        type: 'GET',
+                        url: url,
+                        data: {},
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function(jsondata) {
+                            console.log("success");
+                            //console.log(JSON.stringify(jsondata));
+                            var data = eval(jsondata.objects);
+                        var output='';
+                            output +='<hr />';
+
+                      var offset = meta.offset;
+                      $.each(data, function(i, profile) {
+                        //alert(profile.id);
+                            offset = offset + 1;
+                            output+='<td>'+ offset +'</td>';
+                            output +='<article>';
+                            output +='<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">';
+                            output +='<div class="grid-container">';
+                            output +='<div class="top-content text-center">';
+                            output +='<div class="avater">';
+                            output +='<a href="'+ profile.profile_detail_url +'?content=layers">';
+                            output +='<div class="avater-img">';
+                            output +='<div class="avater-img-mid">';
+                            output +='<div class="text-center">';
+                            output +='<img height="100" class="img-circle" src="'+ profile.avatar_100 +'" alt="Profile Image"/>';
+                            output +='</div>';
+                            output +='</div>';
+                            output +='</div>';
+                            output +='<div class="txt" style="min-height: 60px;">';
+                                if(profile.first_name != ''){
+                            output +=''+ profile.first_name+' '+  profile.last_name +' ';
+                                }else{
+                            output +=''+ profile.username +' ';
+                                }
+                            output +='</div>';
+                            output +='</a>';
+                            output +='</div>';
+                            output +='<div class="details pro-org" title="'+profile.organization+'">';
+                                    if(profile.organization){
+                            output +='<div>';
+                            output +=''+ profile.organization +'';
+                            output +='</div>';
+                                    }else{
+                            output +='<div>';
+                            output +='No Organization info';
+                            output +='</div>';
+                                    }
+                            output +='</div>';
+                            output +='</div>';
+                            output +='<div class="bottom-content">';
+                            output +='<div class="row">';
+                            output +='<div class="profile-items text-center">';
+                            output +='<ul class="list-inline">';
+                            output +='<li>';
+                            output +='<a href="'+ profile.profile_detail_url +'?content=layers" >';
+                            output +='<span class="fa-layers-group fa-stack fa-rotate-90" style="font-size:12px;">';
+                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: 0;"></i>';
+                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: -.15em;color:#fff;"></i>';
+                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: -.3em;"></i>';
+                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: -.45em;color:#fff;"></i>';
+                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: -.6em;"></i>';
+                            output +='</span>';
+                            output +=''+ profile.layers_count +'';
+                            output +='</a>';
+                            output +='</li>';
+                            output +='<li>';
+                            output +='<a href="'+ profile.profile_detail_url +'?content=documents">';
+                            output +='<i class="fa fa-file-text-o"></i> ';
+                            output +=''+ profile.documents_count +'';
+                            output +='</a>';
+                            output +='</li>';
+                            output +='<li>';
+                            output +='<a href="'+ profile.profile_detail_url +'?content=maps">';
+                            output +='<i class="fa fa-map-marker"></i> ';
+                            output +=''+ profile.maps_count +'';
+                            output +='</a>';
+                            output +='</li>';
+                            output +='</ul>';
+                            output +='</div>';
+                            output +='</div>';
+                            output +='</div>';
+                            output +='</div>';
+                            output +='</div>';
+                            output +='</article>';
+                        });
+                        $("#viewuserlist").append(output);
+                        },
+                        error: function(xhr, ajaxOptions, thrownError) {
+                            console.log("error");
+                        }
+                 });
+            });
+        });
+    </script>
+    <script>
+    function deleteLayer(id){
+        //console.log(id);
+        var sleID = parseInt(id);
+        $("#testid").html(id);
+        $('#_delete_layer').modal('show');
+        $('#Layer_Del').attr('action', '../../layers/'+ sleID +'/delete');
+    }
+
+    $(function () {
+        $("#follow_button, #unfollow_button").click(function () {
+            $.post($(this).attr("href"), {});
+            $(this).parent().find("#follow_button, #unfollow_button").toggle();
+            return false
+        });
+    });
+    </script>
+<script type="text/javascript" language="JavaScript">
+        var csrftoken = "{{ csrf_token }}";
+        $("#select-all-layer").change(function () {
+            var status = $(this).is(":checked") ? true : false;
+            $('.layer-to-approve').prop('checked', status);
+            enableOrDisableApproveAllButton();
+        });
+        function disableAllContinueForApprovalButton(condition) {
+            if(condition) {
+                $('.approve-button').addClass('disabled');
+            }else {
+                $('.approve-button').removeClass('disabled');
+            }
+        }
+        function enableOrDisableApproveAllButton() {
+            var selecteds = [];
+            $('.layer-to-approve:checked').each(function () {
+                selecteds.push($(this).val());
+            });
+            if(selecteds.length> 0) {
+                $('#approve-all-button').removeClass('disabled');
+            }else {
+                $('#approve-all-button').addClass('disabled');
+            }
+        }
+        function error(jqXHR,textStatus,errorThrown) {
+            $('#approve-all-button').removeClass('disabled');
+            $.toaster(errorThrown, 'Error', 'danger');
+            enableOrDisableApproveAllButton();
+        }
+        function success(data,textStatus,jqXHR) {
+            $.toaster('All Layer Approved', 'Success', 'success');
+            $('#approve-all-button').removeClass('disabled');
+            enableOrDisableApproveAllButton();
+            showAdminDraftLayer();
+
+        }
+        function postAllLayersForApproval(layersIds) {
+            var data = {
+                "layer_ids": layersIds
+            };
+            $.ajax({
+                url: "/api/layers/approve-multiple-layers/",
+                method: "PUT",
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                error: error,
+                success: success
+            });
+        }
+        function approveAll(e) {
+            var selecteds = [];
+            $('.layer-to-approve:checked').each(function () {
+                selecteds.push($(this).val());
+            });
+            $('#approve-all-button').addClass('disabled');
+            disableAllContinueForApprovalButton(true);
+            postAllLayersForApproval(selecteds);
+        }
+        function showAdminDraftLayer(targeturl){
+            var limit = 25;
+            if(targeturl== undefined){
+                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_layer_api' %}?limit="+ limit +"&resource_state=user_approval_request_list&user_type=admin";
+            }
+            else{
+                var url = targeturl;
+            }
+            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
+                $.ajax({
+                    cache: true,
+                    type: 'GET',
+                    url: url,
+                    data: {},
+                    dataType: "json",
+                    success: function(jsondata) {
+                        console.log("success");
+                        //console.log(JSON.stringify(jsondata));
+                    var data = eval(jsondata.objects);
+                    var meta = eval(jsondata.meta);
+                    var t_count = meta.total_count;
+                    var t_limit = meta.limit;
+                    var t_offset = meta.offset;
+                    var t_next = meta.next;
+                    var t_previous = meta.previous;
+                        //alert(t_offset);
+                    var output='';
+                    var outputpag='';
+                    var offset = meta.offset;
+                  $.each(data, function(i, item) {
+                    offset = offset + 1;
+                    output+='<tr>';
+                    output+='<td>'+ '<input type="checkbox" value='+item.id+' class="layer-to-approve" onclick="enableOrDisableApproveAllButton();">' +'</td>';
+                    output+='<td>'+ offset +'</td>';
+                    output+='<td><a href='+ item.detail_url +'>'+ item.title+'</a></td>';
+                    output+='<td>'+ item.group +'</td>';
+                    output+='<td>'+ item.current_iteration +'</td>';
+                    output+='<td>'+ item.owner +'</td>';
+                    output+='<td>'+ item.date_updated +'</td>';
+                      {% if FRONT_END_SETTINGS.attribute_permission %}
+                          output+='<td><a href="'+ item.detail_url +'/preview" class="btn btn-gd-primary">{% trans "Continue to Approve/Deny" %}</a></td>';
+                      {% else %}
+                          output+='<td><a href="'+ item.detail_url +'?user_role=manager" class="btn btn-gd-primary approve-button">{% trans "Continue to Approve/Deny" %}</a></td>';
+                      {% endif %}
+
+                    output+='</tr>';
+                  });
+                  outputpag+='<div>';
+                  outputpag+='<nav>';
+                  outputpag+='<ul class="pagination pull-left">';
+                  var nexturl = meta.next;
+                  //alert(t_count);
+                  var previousurl = meta.previous;
+                  if(previousurl){
+                  outputpag+='<li><a href="javascript:;" id="previousAdminDraftlayers"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
+                  }
+                  if(nexturl){
+                  outputpag+='<li><a href="javascript:;" id="nextAdminDraftlayers"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
+                    }
+                  outputpag+='</ul>';
+                  outputpag+='</nav>';
+                  outputpag+='</div>';
+                   $("#showallAdminDraftlayers").html(output);
+                   $("#showallAdminDraftlayerspag").html(outputpag);
+                   $("#nextAdminDraftlayers").click(function(){
+                        showAdminDraftLayer(nexturl)
+                   });
+                   $("#previousAdminDraftlayers").click(function(){
+                        showAdminDraftLayer(previousurl)
+                   });
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        console.log("error");
+                    }
+                });
+        }
+
+        $(document).ready(function(){
+            showAdminDraftLayer();
+        });
+ </script>
+<script type="text/javascript" language="JavaScript">
+        function showAdminDatalayers_pending(targeturl){
+            var limit = 25;
+            if(targeturl== undefined){
+                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_layer_api' %}?limit="+ limit +"&resource_state=approved_list&user_type=admin";
+            }
+            else{
+                var url = targeturl;
+            }
+            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
+                $.ajax({
+                    cache: true,
+                    type: 'GET',
+                    url: url,
+                    data: {},
+                    dataType: "json",
+                    success: function(jsondata) {
+                        console.log("success");
+                        //console.log(JSON.stringify(jsondata));
+                    var data = eval(jsondata.objects);
+                    var meta = eval(jsondata.meta);
+                    var t_count = meta.total_count;
+                    var t_limit = meta.limit;
+                    var t_offset = meta.offset;
+                    var t_next = meta.next;
+                    var t_previous = meta.previous;
+                        //alert(t_offset);
+                    var output='';
+                    var outputpag='';
+                    var i =1;
+                    var offset = meta.offset;
+                  $.each(data, function(i, item) {
+                  //alert(item.date_created)
+                    offset = offset + 1;
+                    output+='<tr>';
+                    output+='<td>'+ offset +'</td>';
+                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
+                    output+='<td>'+ item.group +'</td>';
+                    output+='<td>'+ item.owner +'</td>';
+                    output+='<td>'+ item.last_auditor +'</td>';
+                    output+='<td>'+ item.date_updated +'</td>';
+                    output+='<td><a href="'+ item.detail_url +'" class="btn btn-gd-primary">{% trans "Edit" %}</a></td>';
+                    output+='<td><button type="button" class="btn btn-gd-primary" onclick="deleteLayer('+ item.id +')" style="color:#fff;">{% trans "Delete Layer" %}</button></td>';
+                    output+='<td><a href="'+ item.detail_url +'?user_role=manager" class="btn btn-gd-primary">{% trans "Unapproved" %}</a></td>';                    
+                    output+='</tr>';
+                  });
+                  outputpag+='<div>';
+                  outputpag+='<nav>';
+                  outputpag+='<ul class="pagination pull-left">';
+                  var nexturl = meta.next;
+                  //alert(t_count);
+                  var previousurl = meta.previous;
+                  if(previousurl){
+                  outputpag+='<li><a href="javascript:;" id="previousAdminDraftlayers_pen"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
+                  }
+                  if(nexturl){
+                  outputpag+='<li><a href="javascript:;" id="nextAdminDraftlayers_pen"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
+                    }
+                  outputpag+='</ul>';
+                  outputpag+='</nav>';
+                  outputpag+='</div>';
+                   $("#allAdminDraftlayers_pen").html(output);
+                   $("#showallAdminDraftlayerspag_panding").html(outputpag);
+                   $("#nextAdminDraftlayers_pen").click(function(){
+                        showAdminDatalayers_pending(nexturl)
+                   });
+                   $("#previousAdminDraftlayers_pen").click(function(){
+                        showAdminDatalayers_pending(previousurl)
+                   });
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        console.log("error");
+                    }
+                });
+        }
+
+        $(document).ready(function(){
+            $("#Approved_list_layers_admin").click(function(){
+                showAdminDatalayers_pending();
+                });
+         });
+ </script>
+<script type="text/javascript" language="JavaScript">
+        function showAdminDatalayers_draft(targeturl,counturl){
+            var limit = 25;
+            var counut = counturl;
+            if(targeturl== undefined){
+                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_layer_api' %}?limit="+ limit +"&resource_state=user_draft_list&user_type=admin";
+            }
+            else{
+                var url = targeturl;
+            }
+            if(counturl== undefined){
+                counturl = 0;
+            }
+            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
+                $.ajax({
+                    cache: true,
+                    type: 'GET',
+                    url: url,
+                    data: {},
+                    dataType: "json",
+                    success: function(jsondata) {
+                        console.log("success");
+                        //console.log(JSON.stringify(jsondata));
+                    var data = eval(jsondata.objects);
+                    var meta = eval(jsondata.meta);
+                    var t_count = meta.total_count;
+                    var t_limit = meta.limit;
+                    var t_offset = meta.offset;
+                    var t_next = meta.next;
+                    var t_previous = meta.previous;
+                        //alert(t_offset);
+                    var output='';
+                    var outputpag='';
+                    var offset = meta.offset;
+                  $.each(data, function(i, item) {
+                    counturl = counturl+1;
+                    offset = offset + 1;
+                    output+='<tr>';
+                    output+='<td>'+ offset +'</td>';
+                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
+                    output+='<td>'+ item.group +'</td>';
+                    output+='<td>'+ item.owner +'</td>';
+                    output+='<td>'+ item.date_created +'</td>';
+                    output+='<td><button type="button" class="btn btn-gd-primary" onclick="deleteLayer('+ item.id +')" style="color:#fff;">{% trans "Delete Layer" %}</button></td>';
+                    output+='</tr>';
+                  });
+                  outputpag+='<div>';
+                  outputpag+='<nav>';
+                  outputpag+='<ul class="pagination pull-left">';
+                  var nexturl = meta.next;
+                  //alert(t_count);
+                  var previousurl = meta.previous;
+                  if(previousurl){
+                  outputpag+='<li><a href="javascript:;" id="previousAdminDraftlayers_denied"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
+                  }
+                  if(nexturl){
+                  outputpag+='<li><a href="javascript:;" id="nextAdminDraftlayers_denied"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
+                    }
+                  outputpag+='</ul>';
+                  outputpag+='</nav>';
+                  outputpag+='</div>';
+                   $("#allAdminDraftlayers_denied").html(output);
+                   $("#showallAdminDraftlayerspag_denied").html(outputpag);
+                   $("#nextAdminDraftlayers_denied").click(function(){
+                        showAdminDatalayers_draft(nexturl, counturl)
+                   });
+                   $("#previousAdminDraftlayers_denied").click(function(){
+                        showAdminDatalayers_draft(previousurl)
+                   });
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        console.log("error");
+                    }
+                });
+        }
+
+        $(document).ready(function(){
+            $("#Admin_userdraft").click(function(){
+                showAdminDatalayers_draft();
+                });
+         });
+ </script>
+
+<script type="text/javascript" language="JavaScript">
+        function showAdminDatalayers_active(targeturl){
+            var limit = 25;
+            if(targeturl== undefined){
+                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_layer_api' %}?limit="+ limit +"&resource_state=denied_list&user_type=admin";
+            }
+            else{
+                var url = targeturl;
+            }
+            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
+                $.ajax({
+                    cache: true,
+                    type: 'GET',
+                    url: url,
+                    data: {},
+                    dataType: "json",
+                    success: function(jsondata) {
+                        console.log("success");
+                        console.log(JSON.stringify(jsondata));
+                    var data = eval(jsondata.objects);
+                    var meta = eval(jsondata.meta);
+                    var t_count = meta.total_count;
+                    var t_limit = meta.limit;
+                    var t_offset = meta.offset;
+                    var t_next = meta.next;
+                    var t_previous = meta.previous;
+                        //alert(t_offset);
+                    var output='';
+                    var outputpag='';
+                    var i =1;
+                    var offset = meta.offset;
+                  $.each(data, function(i, item) {
+                    offset = offset + 1;
+                    output+='<tr>';
+                    output+='<td>'+ offset +'</td>';
+                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
+                    output+='<td>'+ item.group +'</td>';
+                    output+='<td>'+ item.owner +'</td>';
+                    output+='<td>'+ item.last_auditor +'</td>';
+                    output+='<td>'+ item.date_updated +'</td>';
+                    output+='</tr>';
+                  });
+                  outputpag+='<div>';
+                  outputpag+='<nav>';
+                  outputpag+='<ul class="pagination pull-left">';
+                  var nexturl = meta.next;
+                  //alert(t_count);
+                  var previousurl = meta.previous;
+                  if(previousurl){
+                  outputpag+='<li><a href="javascript:;" id="previousAdminDraftlayers_active"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
+                  }
+                  if(nexturl){
+                  outputpag+='<li><a href="javascript:;" id="nextAdminDraftlayers_active"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
+                    }
+                  outputpag+='</ul>';
+                  outputpag+='</nav>';
+                  outputpag+='</div>';
+                   $("#allAdminDraftlayers_active").html(output);
+                   $("#showallAdminDraftlayerspag_active").html(outputpag);
+                   $("#nextAdminDraftlayers_active").click(function(){
+                        showAdminDatalayers_active(nexturl)
+                   });
+                   $("#previousAdminDraftlayers_active").click(function(){
+                        showAdminDatalayers_active(previousurl)
+                   });
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        console.log("error");
+                    }
+                });
+        }
+
+        $(document).ready(function(){
+            $("#Admin_dined_list").click(function(){
+                showAdminDatalayers_active();
+                });
+         });
+ </script>
+{% endblock %}
+
+
