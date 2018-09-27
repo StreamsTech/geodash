@@ -4,67 +4,114 @@
 
 angular
     .module('workspaceApp')
-    .controller('MemberLayerController', function ($scope, $http, $timeout) {
+    .controller('MemberLayerController', function ($scope, $q, $window, $http, $timeout, dataListService) {
+        var self = $scope;
+    self.printme = "please convert me to angular js";
+    self.searchString = null;
+    self.currentTab = 0;
 
-    $scope.printme = "please convert me to angular js";
+    self.draftLayerListUrl = "../../api/workspace_layer_api/?limit=25&resource_state=draft_list&user_type=member";
+    self.pendingLayerListUrl = "../../api/workspace_layer_api/?limit=25&resource_state=pending_list&user_type=member";
+    self.deniedLayerListUrl = "../../api/workspace_layer_api/?limit=25&resource_state=denied_list&user_type=member";
+    self.activeLayerListUrl = "../../api/workspace_layer_api/?limit=25&resource_state=active_list&user_type=member";
 
-    $scope.items = [
-        {
-            sl: 1,
-            title: 'layer 1',
-            org: 'org 1',
-            date: 'july 1',
-            message: 'Please complete metadata information.',
 
-        },
-        {
-            sl: 2,
-            title: 'layer 2',
-            org: 'org 2',
-            date: 'july 2',
-            message: 'Please complete metadata information.',
-        },
-        {
-            sl: 3,
-            title: 'layer 3',
-            org: 'org 3',
-            date: 'july 3',
-            message: 'Please complete metadata information.',
 
-        },
-        {
-            sl: 4,
-            title: 'layer 4',
-            org: 'org 4',
-            date: 'july 4',
-            message: 'Please complete metadata information.',
+    self.setItems = function(url){
 
-        },
-        {
-            sl: 5,
-            title: 'layer 5',
-            org: 'org 5',
-            date: 'july 5',
-            message: 'Please complete metadata information.',
+        if(self.searchString){
+            url += "&title__contains=" + self.searchString;
+        }
+        self.items = [];
+        dataListService.getDataList(url).then(function (datalist) {
+            self.items = datalist.data.objects;
+            self.nextUrl = datalist.data.meta.next;
+            self.previousUrl = datalist.data.meta.previous;
+            self.counter = datalist.data.meta.offset;
+        });
 
-        },
-        {
-            sl: 6,
-            title: 'layer 6',
-            org: 'org 6',
-            date: 'july 6',
-            message: 'Please complete metadata information.',
+    };
 
-        },
-        {
-            sl: 7,
-            title: 'layer 7',
-            org: 'org 7',
-            date: 'july 7',
-            message: 'Please complete metadata information.',
+
+        self.layerDraftList = function (){
+            self.currentTab = 0;
+            self.searchString = null;
+            self.setItems(self.draftLayerListUrl);
+        };
+        self.layerPendingList = function (){
+            self.currentTab = 1;
+            self.searchString = null;
+            self.setItems(self.pendingLayerListUrl);
+        };
+        self.layerDeniedList = function (){
+            self.currentTab = 2;
+            self.searchString = null;
+            self.setItems(self.deniedLayerListUrl);
+        };
+        self.layerActiveList = function (){
+            self.currentTab = 3;
+            self.searchString = null;
+            self.setItems(self.activeLayerListUrl);
+        };
+
+
+        self.nextItems = function(){
+            self.setItems(self.nextUrl);
+        };
+        self.previousItems = function(){
+            self.setItems(self.previousUrl);
+        };
+
+        self.redirectTo = function(url, queryString){
+            $window.location.href = url+queryString;
+        };
+
+
+        self.backendSearch = function(){
+            if (self.currentTab === 0){
+               self.setItems(self.draftLayerListUrl);
+            }
+            else if (self.currentTab === 1){
+                self.setItems(self.pendingLayerListUrl);
+            }
+            else if (self.currentTab === 2){
+                self.setItems(self.deniedLayerListUrl);
+            }
+            else if (self.currentTab === 3){
+                self.setItems(self.activeLayerListUrl);
+            }
+
+        };
+
+
+        self.processMessage = function(msg){
+            console.log(msg);
+        };
+
+
+        self.deleteLayerModal = function(layerID){
+            $scope.deleteLayerId = layerID;
+            var element = angular.element('#_delete_layer');
+            element.modal('show');
+        };
+
+        self.deleteDraftLayer = function() {
+
+            var url = '../../layers/' + $scope.deleteLayerId + '/delete'
+            dataListService.deleteLayer(url).then(function (datalist) {
+                // self.items = datalist.data.objects;
+                // self.nextUrl = datalist.data.meta.next;
+                // self.previousUrl = datalist.data.meta.previous;
+                // self.counter = datalist.data.meta.offset;
+                console.log(datalist)
+            });
 
         }
-    ];
+
+
+
+
+        self.layerDraftList();
 
 })
 

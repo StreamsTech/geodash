@@ -954,6 +954,8 @@ class WorkSpaceLayerApi(ModelResource):
         resource_name = 'workspace_layer_api'
         excludes = ['csw_anytext', 'metadata_xml']
 
+        filtering = { 'title': ALL_WITH_RELATIONS }
+
     def get_object_list(self, request):
         if 'HTTP_AUTHORIZATION' in request.META:
             token = request.META['HTTP_AUTHORIZATION']

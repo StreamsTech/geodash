@@ -1241,6 +1241,7 @@ def layer_deny(request, layer_pk):
 
 @login_required
 def layer_delete(request, layer_pk):
+    import pdb; pdb.set_trace()
     if request.method == 'POST':
         try:
             layer = Layer.objects.get(id=layer_pk)

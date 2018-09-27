@@ -6,8 +6,10 @@
 
 {% comment %}
 {% block subnav %}
+<link href="{{ STATIC_URL }}lib/css/bootstrap.min.css?v={{ VERSION }}" rel="stylesheet"/>
 <li><a href="{% url "actstream_object_feed" content_type_id=ctype.pk  object_id=actor.pk %}">RSS</a></li>
 <li><a href="{% url "actstream_object_feed_atom" content_type_id=ctype.pk  object_id=actor.pk %}">ATOM</a></li>
+
 {% endblock %}
 {% endcomment %}
 
@@ -47,7 +49,7 @@
 
        
 
-        <div class="row" ng-app="workspaceApp" ng-controller="MemberLayerController">
+        <div class="row" ng-app="workspaceApp" ng-controller="MemberLayerController" >
 
 
                 <div class="col-sm-2 col-xs-1 col-md-2 workspace-sidebar">
@@ -61,29 +63,68 @@
             <div class="col-sm-10 col-sm-offset-2 col-xs-11 col-xs-offset-1 col-md-10 col-md-offset-2 main">
                 <h1 class="d-title" style="margin: 0"> {% trans "Member Workspace" %}</h1>
 
-                <h1> hi jaha [{printme}] </h1>
+                <h1> hi jaha [{printme + 'fgd'}] </h1>
+                <script>
+                    var a = '{% jsonify draft_list_messages %}';
+                    console.log(a);
+                </script>
+
+
+                <!--MODAL-->
+                <!--this modal is used for delete layer from draft list-->
+                <!--this modal will be popped when 'Delete Layer' button is clicked-->
+                <!--in layer draft list-->
+
+                <div class="modal fade" id="_delete_layer" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" style="width:500px;">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title text-center" id="myModalLabel">{% trans "Delete Layer" %}</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group" ng-controller="MemberLayerController">
+                                    <h5> Are you sure you want to Delete this layer ? </h5>
+
+                                </div>
+                            </div>
+                            <div class="alert hidden" id="bulk_perms_message">
+                                <p class="message">}</p>
+                                <p class="extra_content"></p>
+                            </div>
+                            <form method="post" id="Layer_Del" action="">
+
+                                <!--<form id=""  method="post"  action="{% url "layer-delete" 1 %}">-->
+                                {% csrf_token %}
+                                <div class="modal-footer">
+                                    <button class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
+                                    <button type="submit" class="btn btn-primary"  ng-click="deleteDraftLayer()">{% trans "Yes" %}</button>
+                                </div>
+                            <!--</form>-->
+                        </div>
+                    </div>
+                </div>
+
+                <!--END MODAL-->
+
+
+
                 <div class="gd-content">
                     <div class="row">
                         <div class="col-md-12">
 
-                            <div>
-                                <div class="alert alert-warning alert-dismissable">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <strong>Warning!</strong> Please update mandatory fields, missing some information!
-                                </div>
-                            </div>
                             <ul class="nav nav-tabs">
-                                <li class="active"><a href="#draft" data-toggle="tab">{% trans "Draft" %}</a></li>
-                                <li><a href="#pending" id="pending_list_layers"
+                                <li class="active" ng-click="layerDraftList()"><a href="#draft"  data-toggle="tab">{% trans "Draft" %}</a></li>
+                                <li ng-click="layerPendingList()"><a href="#pending" id="pending_list_layers"
                                        data-toggle="tab">{% trans "Pending" %}</a></li>
-                                <li><a href="#denied" id="denied_list_layers" data-toggle="tab">{% trans "Denied" %}</a>
+                                <li ng-click="layerDeniedList()"><a href="#denied" id="denied_list_layers"  data-toggle="tab">{% trans "Denied" %}</a>
                                 </li>
-                                <li><a href="#active" id="active_list_layers" data-toggle="tab">{% trans "Active" %}</a>
+                                <li ng-click="layerActiveList()"><a href="#active" id="active_list_layers"  data-toggle="tab">{% trans "Active" %}</a>
                                 </li>
                             </ul>
 
                             <div class="col-md-4">
-                                <input class="form-control mr-sm-2" type="search" ng-model="searchString" placeholder="Search" aria-label="Search">
+                                <input class="form-control mr-sm-2" type="search" ng-model-options="{ allowInvalid: true, debounce: 500 }" ng-model="searchString"  ng-change="backendSearch()" placeholder="Search" aria-label="Search">
                             </div>
                             <br><br><br>
 
@@ -106,20 +147,18 @@
                                             </tr>
                                             </thead>
 
-                                            <tbody ng-repeat="i in items | searchFor:searchString">
+                                            <tbody ng-repeat="i in items">
 
-                                                <th> [{i.sl}] </th>
-                                                <th> [{i.title}] </th>
-                                                <th> [{i.org}] </th>
-                                                <th> [{i.creationDate}] </th>
+                                                <th> [{ counter + $index + 1}] </th>
+                                                <th><a href=[{i.detail_url}]> [{i.title}]</a></th>
+                                                <th> [{i.group}] </th>
+                                                <th> [{i.date_created}] </th>
                                                 <th> [{i.message}] </th>
-                                                <th> continue for approval btn </th>
-                                                <th> delete layer btn </th>
+                                                <th ng-init="approvalUrl = i.detail_url + '?user_role=member'"><a href = [{approvalUrl}]><button type="button", class="btn btn-gd-primary">Continue for approval</button></a></th>
+                                                <th> <button type="button" class="btn btn-gd-primary" ng-click="deleteLayerModal(i.id)" style="color:#fff;">
+                                                    {% trans "Delete Layer" %}</button> </th>
 
                                             </tbody>
-                                            <!--<tbody id="showallMemberDraftlayers">-->
-
-                                            <!--</tbody>-->
 
                                         </table>
                                         </div>
@@ -143,12 +182,12 @@
                                                 <th>Message</th>
                                             </tr>
                                             </thead>
-                                            <tbody ng-repeat="i in items | searchFor:searchString">
+                                            <tbody ng-repeat="i in items ">
 
-                                            <th> [{i.sl}] </th>
+                                            <th> [{ counter + $index + 1}] </th>
                                             <th> [{i.title}] </th>
-                                            <th> [{i.org}] </th>
-                                            <th> [{i.creationDate}] </th>
+                                            <th> [{i.group}] </th>
+                                            <th> [{i.date_updated}] </th>
                                             <th> [{i.message}] </th>
 
                                             </tbody>
@@ -172,13 +211,13 @@
                                                 <th></th>
                                             </tr>
                                             </thead>
-                                            <tbody ng-repeat="i in items | searchFor:searchString">
+                                            <tbody ng-repeat="i in items ">
 
-                                            <th> [{i.sl}] </th>
-                                            <th> [{i.title}] </th>
-                                            <th> [{i.org}] </th>
-                                            <th>[{i.whoDenied}]]</th>
-                                            <th> [{i.denyDate}] </th>
+                                            <th> [{ counter + $index + 1}] </th>
+                                            <th> <a href=[{i.detail_url}]> [{i.title}] </th>
+                                            <th> [{i.group}] </th>
+                                            <th>[{i.last_auditor}]</th>
+                                            <th> [{i.date_updated}] </th>
                                             <th> [{i.message}] </th>
 
                                             </tbody>
@@ -202,15 +241,16 @@
                                                 <th>Layer Edit</th>
                                             </tr>
                                             </thead>
-                                            <tbody ng-repeat="i in items | searchFor:searchString">
+                                            <tbody ng-repeat="i in items ">
 
-                                            <th> [{i.sl}] </th>
-                                            <th> [{i.title}] </th>
-                                            <th> [{i.org}] </th>
-                                            <th> [{i.activator}] </th>
-                                            <th> [{i.activationDate}] </th>
+                                            <th> [{counter + $index + 1}] </th>
+                                            <th> <a href=[{i.detail_url}]> [{i.title}] </th>
+                                            <th> [{i.group}] </th>
+                                            <th> [{i.last_auditor}] </th>
+                                            <th> [{i.date_updated}] </th>
                                             <th> [{i.message}] </th>
-                                            <th> edit button </th>
+                                            <th ng-init="approvalUrl = i.detail_url + '?user_role=member'"><a href = [{approvalUrl}]><button type="button", class="btn btn-gd-primary">Edit</button></a></th>
+
 
                                             </tbody>
                                         </table>
@@ -220,7 +260,14 @@
                                     </ul>
                                 </article>
                             </div>
-                        </div>
+
+                                <div>
+                                    <a href="" ng-show="previousUrl" ng-click="previousItems()"> <strong><i class="fa fa-angle-left"></i><span>Previous</span> </strong></a>
+                                    &nbsp; &nbsp; &nbsp;
+                                    <a href=""  ng-show="nextUrl" ng-click="nextItems()"> <strong> <span>Next</span><i class="fa fa-angle-right"></i> </strong></a>
+                                    <br><br><br>
+                                </div>
+                            </div>
                     </div>
                 </div>
 
@@ -230,19 +277,13 @@
 
 
 
-{% include "layer_templates/_delete_layer.html" %}
+
+
 {% endblock %}
 
 {% block extra_script %}
 {{ block.super }}
 <script>
-function deleteLayer(id){
-        //console.log(id);
-        var sleID = parseInt(id);
-        $("#testid").html(id);
-        $('#_delete_layer').modal('show');
-        $('#Layer_Del').attr('action', '../../layers/'+ sleID +'/delete');
-    }
 
 $(function () {
     $("#follow_button, #unfollow_button").click(function () {
@@ -252,9 +293,10 @@ $(function () {
     });
 });
 </script>
-
+<script src="{{ STATIC_URL }}Scripts/lib/angular-animate.min.js"></script>
 <script src="{{ STATIC_URL }}workspace/js/apps.js"></script>
 <script src="{{ STATIC_URL }}workspace/js/controllers.js"></script>
 <script src="{{ STATIC_URL }}workspace/js/filters.js"></script>
+<script src="{{ STATIC_URL }}workspace/js/services.js"></script>
 
 {% endblock %}
