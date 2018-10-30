@@ -70,15 +70,15 @@ class MemberWorkspaceMap(ListView):
     """
 
     model = Map
-    template_name = 'member/map.html'
+    template_name = 'workspace/member/map.html'
 
-    def get_context_data(self, *args, **kwargs):
-        context = super(ListView, self).get_context_data(*args, **kwargs)
-        context['draft_list'] = Map.objects.filter(owner=self.request.user, status='DRAFT').order_by('date_updated')
-        context['pending_list'] = Map.objects.filter(owner=self.request.user, status='PENDING').order_by('date_updated')  # [:15]
-        context['denied_list'] = Map.objects.filter(owner=self.request.user, status='DENIED').order_by('date_updated')
-        context['active_list'] = Map.objects.filter(owner=self.request.user, status='ACTIVE').order_by('date_updated')
-        return context
+    # def get_context_data(self, *args, **kwargs):
+    #     context = super(ListView, self).get_context_data(*args, **kwargs)
+    #     context['draft_list'] = Map.objects.filter(owner=self.request.user, status='DRAFT').order_by('date_updated')
+    #     context['pending_list'] = Map.objects.filter(owner=self.request.user, status='PENDING').order_by('date_updated')  # [:15]
+    #     context['denied_list'] = Map.objects.filter(owner=self.request.user, status='DENIED').order_by('date_updated')
+    #     context['active_list'] = Map.objects.filter(owner=self.request.user, status='ACTIVE').order_by('date_updated')
+    #     return context
 
 
 class AdminWorkspaceLayer(ListView):
@@ -87,7 +87,7 @@ class AdminWorkspaceLayer(ListView):
     """
 
     model = Layer
-    template_name = 'admin/layer.html'
+    template_name = 'workspace/admin/layer.html'
 
     def get_context_data(self, *args, **kwargs):
         context = super(ListView, self).get_context_data(*args, **kwargs)

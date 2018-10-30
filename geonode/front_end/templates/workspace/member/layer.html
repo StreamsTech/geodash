@@ -64,13 +64,9 @@
                 <h1 class="d-title" style="margin: 0"> {% trans "Member Workspace" %}</h1>
 
                 <h1> hi jaha [{printme + 'fgd'}] </h1>
-                <script>
-                    var a = '{% jsonify draft_list_messages %}';
-                    console.log(a);
-                </script>
 
 
-                <!--MODAL-->
+                <!--MODAL--jahangir--->
                 <!--this modal is used for delete layer from draft list-->
                 <!--this modal will be popped when 'Delete Layer' button is clicked-->
                 <!--in layer draft list-->
@@ -84,7 +80,8 @@
                             </div>
                             <div class="modal-body">
                                 <div class="form-group" ng-controller="MemberLayerController">
-                                    <h5> Are you sure you want to Delete this layer ? </h5>
+                                    <h5> Are you sure you want to Delete this layersdf ? </h5>
+                                    [{deleteLayerId}]
 
                                 </div>
                             </div>
@@ -100,7 +97,7 @@
                                     <button class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
                                     <button type="submit" class="btn btn-primary"  ng-click="deleteDraftLayer()">{% trans "Yes" %}</button>
                                 </div>
-                            <!--</form>-->
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -153,10 +150,16 @@
                                                 <th><a href=[{i.detail_url}]> [{i.title}]</a></th>
                                                 <th> [{i.group}] </th>
                                                 <th> [{i.date_created}] </th>
-                                                <th> [{i.message}] </th>
-                                                <th ng-init="approvalUrl = i.detail_url + '?user_role=member'"><a href = [{approvalUrl}]><button type="button", class="btn btn-gd-primary">Continue for approval</button></a></th>
+                                                <th ng-if="i.metadata_updated" style="color: green;"> [{i.message}] </th>
+                                                <th ng-if="i.metadata_updated == false" style="color: indianred;"> [{i.message}] </th>
+                                                <th ng-init="approvalUrl = i.detail_url + '?user_role=member'">
+                                                    <a href = [{approvalUrl}]>
+                                                        <button ng-disabled="!i.metadata_updated" type="button", class="btn btn-gd-primary">Continue for approval</button>
+                                                    </a>
+                                                </th>
                                                 <th> <button type="button" class="btn btn-gd-primary" ng-click="deleteLayerModal(i.id)" style="color:#fff;">
-                                                    {% trans "Delete Layer" %}</button> </th>
+                                                    {% trans "Delete Layer" %}</button>
+                                                </th>
 
                                             </tbody>
 
@@ -185,10 +188,13 @@
                                             <tbody ng-repeat="i in items ">
 
                                             <th> [{ counter + $index + 1}] </th>
-                                            <th> [{i.title}] </th>
+                                            <!--<th> [{i.title}] </th>-->
+                                            <th><a href=[{i.detail_url}]> [{i.title}]</a></th>
                                             <th> [{i.group}] </th>
                                             <th> [{i.date_updated}] </th>
-                                            <th> [{i.message}] </th>
+                                            <th ng-if="i.metadata_updated" style="color: green;"> [{i.message}] </th>
+                                            <th ng-if="i.metadata_updated == false" style="color: indianred;"> [{i.message}] </th>
+
 
                                             </tbody>
                                         </table>
@@ -214,11 +220,17 @@
                                             <tbody ng-repeat="i in items ">
 
                                             <th> [{ counter + $index + 1}] </th>
-                                            <th> <a href=[{i.detail_url}]> [{i.title}] </th>
+                                            <th> <a href=[{i.detail_url}]> [{i.title}]</a> </th>
                                             <th> [{i.group}] </th>
                                             <th>[{i.last_auditor}]</th>
                                             <th> [{i.date_updated}] </th>
-                                            <th> [{i.message}] </th>
+                                            <th ng-if="i.metadata_updated" style="color: green;"> [{i.message}] </th>
+                                            <th ng-if="i.metadata_updated == false" style="color: indianred;"> [{i.message}] </th>
+                                            <th ng-init="approvalUrl = i.detail_url + '?user_role=member'">
+                                                    <a href = [{approvalUrl}]>
+                                                        <button ng-disabled="!i.metadata_updated" type="button", class="btn btn-gd-primary">Edit and push again</button>
+                                                    </a>
+                                            </th>
 
                                             </tbody>
                                         </table>
@@ -248,9 +260,13 @@
                                             <th> [{i.group}] </th>
                                             <th> [{i.last_auditor}] </th>
                                             <th> [{i.date_updated}] </th>
-                                            <th> [{i.message}] </th>
-                                            <th ng-init="approvalUrl = i.detail_url + '?user_role=member'"><a href = [{approvalUrl}]><button type="button", class="btn btn-gd-primary">Edit</button></a></th>
-
+                                            <th ng-if="i.metadata_updated" style="color: green;"> [{i.message}] </th>
+                                            <th ng-if="i.metadata_updated == false" style="color: indianred;"> [{i.message}] </th>
+                                            <th ng-init="approvalUrl = i.detail_url + '?user_role=member'">
+                                                    <a href = [{approvalUrl}]>
+                                                        <button ng-disabled="!i.metadata_updated" type="button", class="btn btn-gd-primary">Edit</button>
+                                                    </a>
+                                            </th>
 
                                             </tbody>
                                         </table>

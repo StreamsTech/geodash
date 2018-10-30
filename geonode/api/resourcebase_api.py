@@ -995,13 +995,13 @@ class WorkSpaceLayerApi(ModelResource):
             elif user_type == 'member':
                 if resource_type == 'layer':
                     if resource_state == 'draft_list':
-                        return Layer.objects.filter(owner=user, status='DRAFT').order_by('date_updated')
+                        return Layer.objects.filter(owner=user, status='DRAFT').order_by('-date_updated')
                     elif resource_state == 'pending_list':
-                        return Layer.objects.filter(owner=user, status='PENDING').order_by('date_updated')
+                        return Layer.objects.filter(owner=user, status='PENDING').order_by('-date_updated')
                     elif resource_state == 'denied_list':
-                        return Layer.objects.filter(owner=user, status='DENIED').order_by('date_updated')
+                        return Layer.objects.filter(owner=user, status='DENIED').order_by('-date_updated')
                     elif resource_state == 'active_list':
-                        return Layer.objects.filter(owner=user, status='ACTIVE').order_by('date_updated')
+                        return Layer.objects.filter(owner=user, status='ACTIVE').order_by('-date_updated')
                     else:
                         return nothing
                 else:
@@ -1011,13 +1011,38 @@ class WorkSpaceLayerApi(ModelResource):
             return nothing
 
     def dehydrate(self, bundle):
+        message, status = self.metadata_update_status(bundle.obj)
         bundle.data['group'] = bundle.obj.group
         bundle.data['current_iteration'] = bundle.obj.current_iteration
         bundle.data['time'] = bundle.obj.date_updated.ctime()
         bundle.data['owner'] = bundle.obj.owner.username
         bundle.data['last_auditor'] = bundle.obj.last_auditor
+        bundle.data['message'] = message
+        bundle.data['metadata_updated'] = status
         return bundle
 
+    @staticmethod
+    def metadata_update_status(layer):
+        metadata_field_list = ['owner', 'title', 'date', 'date_type', 'edition', 'abstract', 'purpose',
+                               'maintenance_frequency', 'regions', 'restriction_code_type', 'constraints_other',
+                               'license', 'language', 'spatial_representation_type', 'resource_type',
+                               'temporal_extent_start', 'temporal_extent_end', 'supplemental_information',
+                               'data_quality_statement', 'thumbnail_url', 'elevation_regex', 'time_regex', 'keywords',
+                               'category']
+
+        metadata_mandatory_fields = ['title', 'date', 'edition', 'abstract', 'restriction_code_type',
+                                     'spatial_representation_type',
+                                     'resource_type', 'data_quality_statement', 'category']
+
+        for field in metadata_mandatory_fields:
+            if not getattr(layer, layer._meta.get_field(field).name):
+                return "Please complete mandatory metadata fields.", False
+
+        for field in metadata_field_list:
+            if not getattr(layer, layer._meta.get_field(field).name):
+                return "Please complete remaining metadata fields.", True
+
+        return 'Completed', True
 
 
 class WorkSpaceDocumentApi(ModelResource):
@@ -1136,6 +1161,7 @@ class WorkSpaceMapApi(ModelResource):
         if settings.RESOURCE_PUBLISHING:
             queryset = queryset.filter(is_published=True)
         resource_name = 'workspace_map_api'
+        filtering = {'title': ALL_WITH_RELATIONS}
 
     def get_object_list(self, request):
         if 'HTTP_AUTHORIZATION' in request.META:

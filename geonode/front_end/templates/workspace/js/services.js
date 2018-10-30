@@ -22,19 +22,6 @@
                 return get(url);
             }
 
-            this.deleteLayer = function(url, obj) {
-                var deferred = $q.defer();
-                $http.post(url, obj, {
-                    headers: {
-                        "X-CSRFToken": $cookies.get('csrftoken')
-                    }
-                }).success(function(res) {
-                    deferred.resolve(res);
-                }).error(function(error, status) {
-                    deferred.reject({ error: error, status: status });
-                });
-                return deferred.promise;
-            }
 
 
         });
