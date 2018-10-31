@@ -44,7 +44,7 @@
     }
     </style>
 
-        <div class="row">
+        <div class="row" ng-app="workspaceApp" ng-controller="MemberDocumentController">
 
             <div class="col-sm-2 col-xs-1 col-md-2 workspace-sidebar">
                         <ul class="nav nav-sidebar">
@@ -58,16 +58,61 @@
                 <div class="col-sm-10 col-sm-offset-2 col-xs-11 col-xs-offset-1 col-md-10 col-md-offset-2 main">
 
                         <h1 class="d-title" style="margin: 0"> {% trans "Member Workspace" %}</h1>
+                    <h1> hi jaha [{printme + 'fgd'}] </h1>
+
+                    <!--MODAL--jahangir--->
+                <!--this modal is used for delete document from draft list-->
+                <!--this modal will be popped when 'Delete Document' button is clicked-->
+                <!--in document draft list-->
+
+                <div class="modal fade" id="_delete_document" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" style="width:500px;">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title text-center" id="myModalLabel">{% trans "Delete Document" %}</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group" ng-controller="MemberDocumentController">
+                                    <h5> Are you sure you want to Delete this document ? </h5>
+
+                                </div>
+                            </div>
+                            <div class="alert hidden" id="bulk_perms_message">
+                                <p class="message">}</p>
+                                <p class="extra_content"></p>
+                            </div>
+                            <form method="post" id="Document_Del" action="">
+
+                                {% csrf_token %}
+                                <div class="modal-footer">
+                                    <button class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
+                                    <button type="submit" class="btn btn-primary"  ng-click="deleteDraftDocument()">{% trans "Yes" %}</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!--END MODAL-->
+
+
                         <div class="gd-content">
                                 <div class="row">
                                   <div class="col-md-12">
 
                                     <ul class="nav nav-tabs">
-                                      <li class="active"><a href="#draft" data-toggle="tab">{% trans "Draft" %}</a></li>
-                                      <li><a href="#pending" id="pending_list_docs" data-toggle="tab">{% trans "Pending" %}</a></li>
-                                      <li><a href="#denied"  id="denied_list_docs" data-toggle="tab">{% trans "Denied" %}</a></li>
-                                      <li><a href="#active" id="active_list_docs" data-toggle="tab">{% trans "Active" %}</a></li>
+                                      <li class="active" ng-click="documentDraftList()"><a href="#draft" data-toggle="tab">{% trans "Draft" %}</a></li>
+                                      <li ng-click="documentPendingList()"><a href="#pending" id="pending_list_docs" data-toggle="tab">{% trans "Pending" %}</a></li>
+                                      <li ng-click="documentDeniedList()"><a href="#denied"  id="denied_list_docs" data-toggle="tab">{% trans "Denied" %}</a></li>
+                                      <li ng-click="documentActiveList()"><a href="#active" id="active_list_docs" data-toggle="tab">{% trans "Active" %}</a></li>
                                     </ul>
+
+                                      <div class="col-md-4">
+                                            <input class="form-control mr-sm-2" type="search" ng-model-options="{ allowInvalid: true, debounce: 500 }" ng-model="searchString"  ng-change="backendSearch()" placeholder="Search" aria-label="Search">
+                                        </div>
+                                        <br><br><br>
+                                      
                                     <div class="tab-content">
                                       <article id="draft" class="tab-pane active">
                                         <ul class="no-style-list">
@@ -83,9 +128,20 @@
                                                         <th></th>
                                                     </tr>
                                                 </thead>
-                                                    <tbody id="showallMemberDraftdocs">
-
-                                                    </tbody>
+                                                <tbody ng-repeat="i in items">
+                                                    <th> [{ counter + $index + 1}] </th>
+                                                    <th><a href=[{i.detail_url}]> [{i.title}]</a></th>
+                                                    <th> [{i.group}] </th>
+                                                    <th> [{i.date_created}] </th>
+                                                    <th ng-init="approvalUrl = i.detail_url + '?user_role=member'">
+                                                    <a href = [{approvalUrl}]>
+                                                        <button type="button", class="btn btn-gd-primary">Continue for approval</button>
+                                                    </a>
+                                                    </th>
+                                                    <th> <button type="button" class="btn btn-gd-primary" ng-click="deleteDocumentModal(i.id)" style="color:#fff;">
+                                                        {% trans "Delete Document" %}</button>
+                                                    </th>
+                                                </tbody>
 
                                             </table>
                                             </div>
@@ -107,9 +163,12 @@
                                                     </tr>
                                                 </thead>
 
-                                                    <tbody id="allMemberDraftdocs_pen">
-
-                                                    </tbody>
+                                                <tbody ng-repeat="i in items ">
+                                                    <th> [{ counter + $index + 1}] </th>
+                                                    <th><a href=[{i.detail_url}]> [{i.title}]</a></th>
+                                                    <th> [{i.group}] </th>
+                                                    <th> [{i.date_updated}] </th>
+                                                </tbody>
 
                                             </table>
                                             <div id="showallMemberDraftdocspag_panding">
@@ -131,9 +190,18 @@
                                                     </tr>
                                                 </thead>
 
-                                                    <tbody id="allMemberDraftdocs_denied">
-
-                                                    </tbody>
+                                                <tbody ng-repeat="i in items ">
+                                                    <th> [{ counter + $index + 1}] </th>
+                                                    <th><a href=[{i.detail_url}]> [{i.title}]</a></th>
+                                                    <th> [{i.group}] </th>
+                                                    <th>[{i.last_auditor}]</th>
+                                                    <th> [{i.date_updated}] </th>
+                                                    <th ng-init="approvalUrl = i.detail_url + '?user_role=member'">
+                                                        <a href = [{approvalUrl}]>
+                                                            <button type="button", class="btn btn-gd-primary">Edit and push again</button>
+                                                        </a>
+                                                    </th>
+                                                </tbody>
 
                                             </table>
                                             <div id="showallMemberDraftdocspag_denied">
@@ -155,9 +223,19 @@
                                                     </tr>
                                                 </thead>
 
-                                                    <tbody id="allMemberDraftdocs_active">
+                                                <tbody ng-repeat="i in items ">
+                                                    <th> [{ counter + $index + 1}] </th>
+                                                    <th><a href=[{i.detail_url}]> [{i.title}]</a></th>
+                                                    <th> [{i.group}] </th>
+                                                    <th>[{i.last_auditor}]</th>
+                                                    <th> [{i.date_updated}] </th>
+                                                    <th ng-init="approvalUrl = i.detail_url + '?user_role=member'">
+                                                        <a href = [{approvalUrl}]>
+                                                            <button type="button", class="btn btn-gd-primary">Edit</button>
+                                                        </a>
+                                                    </th>
+                                                </tbody>
 
-                                                    </tbody>
 
                                             </table>
                                             <div id="showallMemberDraftdocspag_active">
@@ -201,313 +279,10 @@ $(function () {
 });
 </script>
 
-<script type="text/javascript" language="JavaScript">
-        function showMemberDraftDoc(targeturl){
-            var limit = 25;
-            if(targeturl== undefined){
-                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_document_api' %}?limit="+ limit +"&resource_state=draft_list&user_type=member";
-            }
-            else{
-                var url = targeturl;
-            }
-            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
-                $.ajax({
-                    cache: true,
-                    type: 'GET',
-                    url: url,
-                    data: {},
-                    dataType: "json",
-                    success: function(jsondata) {
-                        console.log("success");
-                        //console.log(JSON.stringify(jsondata));
-                    var data = eval(jsondata.objects);
-                    var meta = eval(jsondata.meta);
-                    var t_count = meta.total_count;
-                    var t_limit = meta.limit;
-                    var t_offset = meta.offset;
-                    var t_next = meta.next;
-                    var t_previous = meta.previous;
-                        //alert(t_offset);
-                    var output='';
-                    var outputpag='';
-                    var offset = meta.offset;
-                  $.each(data, function(i, item) {
-                    offset = offset + 1;
-                    output+='<tr>';
-                    output+='<td>'+ offset +'</td>';
-                    output+='<td><a href='+ item.detail_url +'>'+ item.title+'</a></td>';
-                    output+='<td>'+ item.group +'</td>';
-                    output+='<td>'+ item.date_created +'</td>';
-                    output+='<td><a href="'+ item.detail_url +'?user_role=member" class="btn btn-gd-primary"> {% trans "Continue for Approval" %}</a>';
-                    output+='<button type="button" class="btn btn-gd-primary" onclick="deleteDocument('+ item.id +')" style="color:#fff;margin-left:6px">{% trans "Delete Document" %}</button> <br>';
-                    output+='</td>';
-                    output+='</tr>';
-                  });
-                  outputpag+='<div>';
-                  outputpag+='<nav>';
-                  outputpag+='<ul class="pagination pull-left">';
-                  var nexturl = meta.next;
-                  //alert(t_count);
-                  var previousurl = meta.previous;
-                  if(previousurl){
-                  outputpag+='<li><a href="javascript:;" id="previousMemberDraftDocs"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
-                  }
-                  if(nexturl){
-                  outputpag+='<li><a href="javascript:;" id="nextMemberDraftDocs"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
-                    }
-                  outputpag+='</ul>';
-                  outputpag+='</nav>';
-                  outputpag+='</div>';
-                   $("#showallMemberDraftdocs").html(output);
-                   $("#showallMemberDraftdocspag").html(outputpag);
-                   $("#nextMemberDraftDocs").click(function(){
-                        showMemberDraftDoc(nexturl)
-                   });
-                   $("#previousMemberDraftDocs").click(function(){
-                        showMemberDraftDoc(previousurl)
-                   });
-                    },
-                    error: function(xhr, ajaxOptions, thrownError) {
-                        console.log("error");
-                    }
-                });
-        }
+<script src="{{ STATIC_URL }}Scripts/lib/angular-animate.min.js"></script>
+<script src="{{ STATIC_URL }}workspace/js/apps.js"></script>
+<script src="{{ STATIC_URL }}workspace/js/controllers.js"></script>
+<script src="{{ STATIC_URL }}workspace/js/filters.js"></script>
+<script src="{{ STATIC_URL }}workspace/js/services.js"></script>
 
-        $(document).ready(function(){
-            showMemberDraftDoc();
-        });
- </script>
-<script type="text/javascript" language="JavaScript">
-        function showLimitDatadocs_pending(targeturl){
-            var limit = 25;
-            if(targeturl== undefined){
-                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_document_api' %}?limit="+ limit +"&resource_state=pending_list&user_type=member";
-            }
-            else{
-                var url = targeturl;
-            }
-            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
-                $.ajax({
-                    cache: true,
-                    type: 'GET',
-                    url: url,
-                    data: {},
-                    dataType: "json",
-                    success: function(jsondata) {
-                        console.log("success");
-                        console.log(JSON.stringify(jsondata));
-                    var data = eval(jsondata.objects);
-                    var meta = eval(jsondata.meta);
-                    var t_count = meta.total_count;
-                    var t_limit = meta.limit;
-                    var t_offset = meta.offset;
-                    var t_next = meta.next;
-                    var t_previous = meta.previous;
-                        //alert(t_offset);
-                    var output='';
-                    var outputpag='';
-                    var i =1;
-                  var offset = meta.offset;
-                  $.each(data, function(i, item) {
-                  //alert(item.date_created).
-                    offset = offset + 1;
-                    output+='<tr>';
-                    output+='<td>'+ offset +'</td>';
-                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
-                    output+='<td>'+ item.group +'</td>';
-                    output+='<td>'+ item.date_updated +'</td>';
-                    output+='</tr>';
-                  });
-                  outputpag+='<div>';
-                  outputpag+='<nav>';
-                  outputpag+='<ul class="pagination pull-left">';
-                  var nexturl = meta.next;
-                  //alert(t_count);
-                  var previousurl = meta.previous;
-                  if(previousurl){
-                  outputpag+='<li><a href="javascript:;" id="previousMemberDraftdocs_pen"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
-                  }
-                  if(nexturl){
-                  outputpag+='<li><a href="javascript:;" id="nextMemberDraftdocs_pen"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
-                    }
-                  outputpag+='</ul>';
-                  outputpag+='</nav>';
-                  outputpag+='</div>';
-                   $("#allMemberDraftdocs_pen").html(output);
-                   $("#showallMemberDraftdocspag_panding").html(outputpag);
-                   $("#nextMemberDraftdocs_pen").click(function(){
-                        showLimitDatadocs_pending(nexturl)
-                   });
-                   $("#previousMemberDraftdocs_pen").click(function(){
-                        showLimitDatadocs_pending(previousurl)
-                   });
-                    },
-                    error: function(xhr, ajaxOptions, thrownError) {
-                        console.log("error");
-                    }
-                });
-        }
-
-        $(document).ready(function(){
-            $("#pending_list_docs").click(function(){
-                showLimitDatadocs_pending();
-                });
-         });
- </script>
-<script type="text/javascript" language="JavaScript">
-        function showLimitDatadocs_denied(targeturl){
-            var limit = 25;
-            if(targeturl== undefined){
-                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_document_api' %}?limit="+ limit +"&resource_state=denied_list&user_type=member";
-            }
-            else{
-                var url = targeturl;
-            }
-            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
-                $.ajax({
-                    cache: true,
-                    type: 'GET',
-                    url: url,
-                    data: {},
-                    dataType: "json",
-                    success: function(jsondata) {
-                        console.log("success");
-                        console.log(JSON.stringify(jsondata));
-                    var data = eval(jsondata.objects);
-                    var meta = eval(jsondata.meta);
-                    var t_count = meta.total_count;
-                    var t_limit = meta.limit;
-                    var t_offset = meta.offset;
-                    var t_next = meta.next;
-                    var t_previous = meta.previous;
-                        //alert(t_offset);
-                    var output='';
-                    var outputpag='';
-                  var offset = meta.offset;
-                  $.each(data, function(i, item) {
-                    offset = offset + 1;
-                    output+='<tr>';
-                    output+='<td>'+ offset +'</td>';
-                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
-                    output+='<td>'+ item.group +'</td>';
-                    output+='<td>'+ item.last_auditor +'</td>';
-                    output+='<td>'+ item.date_updated +'</td>';
-                    output+='<td><a href="'+ item.detail_url +'?user_role=member" class="btn btn-gd-primary"> {% trans "Edit and Push Again" %}</a></td>';
-                    output+='</tr>';
-                  });
-                  outputpag+='<div>';
-                  outputpag+='<nav>';
-                  outputpag+='<ul class="pagination pull-left">';
-                  var nexturl = meta.next;
-                  //alert(t_count);
-                  var previousurl = meta.previous;
-                  if(previousurl){
-                  outputpag+='<li><a href="javascript:;" id="previousMemberDraftdocs_denied"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
-                  }
-                  if(nexturl){
-                  outputpag+='<li><a href="javascript:;" id="nextMemberDraftdocs_denied"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
-                    }
-                  outputpag+='</ul>';
-                  outputpag+='</nav>';
-                  outputpag+='</div>';
-                   $("#allMemberDraftdocs_denied").html(output);
-                   $("#showallMemberDraftdocspag_denied").html(outputpag);
-                   $("#nextMemberDraftdocs_denied").click(function(){
-                        showLimitDatadocs_denied(nexturl)
-                   });
-                   $("#previousMemberDraftdocs_denied").click(function(){
-                        showLimitDatadocs_denied(previousurl)
-                   });
-                    },
-                    error: function(xhr, ajaxOptions, thrownError) {
-                        console.log("error");
-                    }
-                });
-        }
-
-        $(document).ready(function(){
-            $("#denied_list_docs").click(function(){
-                showLimitDatadocs_denied();
-                });
-         });
- </script>
-
-<script type="text/javascript" language="JavaScript">
-        function showLimitDatadocs_active(targeturl){
-            var limit = 25;
-            if(targeturl== undefined){
-                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_document_api' %}?limit="+ limit +"&resource_state=active_list&user_type=member";
-            }
-            else{
-                var url = targeturl;
-            }
-            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
-                $.ajax({
-                    cache: true,
-                    type: 'GET',
-                    url: url,
-                    data: {},
-                    dataType: "json",
-                    success: function(jsondata) {
-                        console.log("success");
-                        console.log(JSON.stringify(jsondata));
-                    var data = eval(jsondata.objects);
-                    var meta = eval(jsondata.meta);
-                    var t_count = meta.total_count;
-                    var t_limit = meta.limit;
-                    var t_offset = meta.offset;
-                    var t_next = meta.next;
-                    var t_previous = meta.previous;
-                        //alert(t_offset);
-                    var output='';
-                    var outputpag='';
-                    var i =1;
-                    var offset = meta.offset;
-                  $.each(data, function(i, item) {
-                    offset = offset + 1;
-                    output+='<tr>';
-                    output+='<td>'+ offset +'</td>';
-                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
-                    output+='<td>'+ item.group +'</td>';
-                    output+='<td>'+ item.last_auditor +'</td>';
-                    output+='<td>'+ item.date_updated +'</td>';
-                    output+='<td><a href="'+ item.detail_url +'?user_role=member" class="btn btn-gd-primary"> {% trans "Edit" %}</a></td>';
-                    output+='</tr>';
-                  });
-                  outputpag+='<div>';
-                  outputpag+='<nav>';
-                  outputpag+='<ul class="pagination pull-left">';
-                  var nexturl = meta.next;
-                  //alert(t_count);
-                  var previousurl = meta.previous;
-                  if(previousurl){
-                  outputpag+='<li><a href="javascript:;" id="previousMemberDraftdocs_active"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
-                  }
-                  if(nexturl){
-                  outputpag+='<li><a href="javascript:;" id="nextMemberDraftdocs_active"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
-                    }
-                  outputpag+='</ul>';
-                  outputpag+='</nav>';
-                  outputpag+='</div>';
-                   $("#allMemberDraftdocs_active").html(output);
-                   $("#showallMemberDraftdocspag_active").html(outputpag);
-                   $("#nextMemberDraftdocs_active").click(function(){
-                        showLimitDatadocs_active(nexturl)
-                   });
-                   $("#previousMemberDraftdocs_active").click(function(){
-                        showLimitDatadocs_active(previousurl)
-                   });
-                    },
-                    error: function(xhr, ajaxOptions, thrownError) {
-                        console.log("error");
-                    }
-                });
-        }
-
-        $(document).ready(function(){
-            $("#active_list_docs").click(function(){
-                showLimitDatadocs_active();
-                });
-         });
- </script>
 {% endblock %}

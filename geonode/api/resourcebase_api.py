@@ -1068,6 +1068,7 @@ class WorkSpaceDocumentApi(ModelResource):
         if settings.RESOURCE_PUBLISHING:
             queryset = queryset.filter(is_published=True)
         resource_name = 'workspace_document_api'
+        filtering = {'title': ALL_WITH_RELATIONS}
 
     def get_object_list(self, request):
         if 'HTTP_AUTHORIZATION' in request.META:

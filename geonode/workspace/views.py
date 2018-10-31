@@ -51,7 +51,7 @@ class MemberWorkspaceDocument(ListView):
     """
 
     model = Document
-    template_name = 'member/document.html'
+    template_name = 'workspace/member/document.html'
 
 
     def get_context_data(self, *args, **kwargs):
