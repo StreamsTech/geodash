@@ -146,6 +146,7 @@ angular
               {
                   layer_ids: self.selectedItems
               })).then(function(res){
+                  $window.location.href = '/workspace/manager/layer';
                     surfToastr.success('Layers approved successfully', 'Success');
 
                 });
@@ -290,6 +291,7 @@ angular
               {
                   map_ids: self.selectedItems
               })).then(function(res){
+                  $window.location.href = '/workspace/manager/map';
                     surfToastr.success('Maps approved successfully', 'Success');
 
                 });
@@ -434,6 +436,7 @@ angular
               {
                   document_ids: self.selectedItems
               })).then(function(res){
+                  $window.location.href = '/workspace/manager/document';
                     surfToastr.success('Documents approved successfully', 'Success');
 
                 });
