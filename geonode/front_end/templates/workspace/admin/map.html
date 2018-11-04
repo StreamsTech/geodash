@@ -68,7 +68,7 @@ footer
 
 
 
-    <div class="row">
+    <div class="row" ng-app="workspaceApp" ng-controller="AdminMapController">
         <div class="col-sm-2 col-xs-1 col-md-2 workspace-sidebar">
        
  
@@ -94,6 +94,44 @@ footer
       <div class="col-sm-10 col-sm-offset-2 col-xs-11 col-xs-offset-1 col-md-10 col-md-offset-2 main">
         <h1 class="d-title" style="margin: 0">{% trans "Admin Workspace" %}</h1>
 
+          <!--MODAL--jahangir--->
+                <!--this modal is used for delete map from user approval request list-->
+                <!--this modal will be popped when 'Delete Map' button is clicked-->
+                <!--in map user approval request list-->
+
+                <div class="modal fade" id="_delete_map" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" style="width:500px;">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title text-center" id="myModalLabel">{% trans "Delete Map" %}</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group" ng-controller="AdminMapController">
+                                    <h5> Are you sure you want to Delete this map ? </h5>
+
+                                </div>
+                            </div>
+                            <div class="alert hidden" id="bulk_perms_message">
+                                <p class="message">}</p>
+                                <p class="extra_content"></p>
+                            </div>
+                            <form method="post" id="Map_Del" action="">
+
+                                <!--<form id=""  method="post"  action="{% url "layer-delete" 1 %}">-->
+                                {% csrf_token %}
+                                <div class="modal-footer">
+                                    <button class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
+                                    <button type="submit" class="btn btn-primary"  ng-click="deleteDraftMap()">{% trans "Yes" %}</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!--END MODAL-->
+
+
         <div class="gd-content">
      
          
@@ -109,23 +147,28 @@ footer
                                           <div id="viewuserlist"></div>
                                           <div id="viewuserlist_none">
                                             <ul class="nav nav-tabs">
-                                              <li class="active"><a href="#user-approval-request" data-toggle="tab">{% trans "User Approval Request" %}</a></li>
-                                              <li><a href="#approved" id="Approved_list_layers_admin" data-toggle="tab">{% trans "Approved" %}</a></li>
-                                              <li><a href="#user-drafts" id="Admin_userdraft_maps" data-toggle="tab">{% trans "User Drafts" %}</a></li>
-                                              <li><a href="#denied-maps" id="Admin_dined_mapslist" data-toggle="tab">{% trans "Denied Maps" %}</a></li>
+                                              <li class="active" ng-click="userApprovalRequestList()"><a href="#user-approval-request" data-toggle="tab">{% trans "User Approval Request" %}</a></li>
+                                              <li ng-click="approvedList()"> <a href="#approved" id="Approved_list_layers_admin" data-toggle="tab">{% trans "Approved" %}</a></li>
+                                              <li ng-click="userDraftsList()"><a href="#user-drafts" id="Admin_userdraft_maps" data-toggle="tab">{% trans "User Drafts" %}</a></li>
+                                              <li ng-click="deniedList()"><a href="#denied-maps" id="Admin_dined_mapslist" data-toggle="tab">{% trans "Denied Maps" %}</a></li>
                                             </ul>
+
+                                                <div class="col-md-4">
+                                                    <input class="form-control mr-sm-2" type="search" ng-model-options="{ allowInvalid: true, debounce: 500 }" ng-model="searchString"  ng-change="backendSearch()" placeholder="Search" aria-label="Search">
+                                                </div>
+                                              <br><br><br>
+
                                             <div class="tab-content">
                                               <article id="user-approval-request" class="tab-pane active">
                                                 <ul class="no-style-list">
-                                                    <a class="btn btn-gd-primary disabled" id="approve-all-button" style="margin-bottom: 10px" onclick="approveAll()">{% trans "Approve All" %}</a>
-                                                    
+                                                    <a class="btn btn-gd-primary" id="approve-all-button" style="margin-bottom: 10px" ng-disabled="selectedItems.length==0" ng-click="approveSelectedItems()" >{% trans "Approve All" %}</a>
+
                                                     <div class="table-responsive">
                                                     <table class="table table-hover table-striped">
                                                         <thead>
                                                             <tr>
                                                                 <th>
-                                                                    <input type="checkbox" value=""
-                                                                           id="select-all-map">
+                                                                    <input type="checkbox" value="" ng-checked="checkAll"  ng-click="toggleAll($event)">
                                                                 </th>
                                                                 <th>Serial No</th>
                                                                 <th>Map Title</th>
@@ -138,10 +181,23 @@ footer
                                                             </tr>
                                                         </thead>
 
-                                                            <tbody id="showallAdminDraftmaps">
+                                                        <tbody ng-repeat="i in items">
+                                                        <th>
+                                                            <input type="checkbox" ng-checked="checkAll" ng-click="toggleSelection($event, i.id)">
+                                                        </th>
+                                                        <th> [{ counter + $index + 1}] </th>
+                                                        <th><a href=[{i.detail_url}]> [{i.title}]</a></th>
+                                                        <th> [{i.group}] </th>
+                                                        <th>[{i.current_iteration}]</th>
+                                                        <th>[{i.owner}]</th>
+                                                        <th>[{i.date_updated}]</th>
+                                                        <th ng-init="approvalUrl = i.detail_url + '?user_role=manager'">
+                                                            <a href = [{approvalUrl}]>
+                                                                <button  type="button", class="btn btn-gd-primary">Continue to Approve/Deny</button>
+                                                            </a>
+                                                        </th>
 
-                                                            </tbody>
-
+                                                    </tbody>
                                                     </table>
                                                     </div>
                                                     <div id="showallAdminDraftmapspag">
@@ -165,9 +221,23 @@ footer
                                                             </tr>
                                                         </thead>
 
-                                                            <tbody id="allAdminDraftmaps_pen">
-
-                                                            </tbody>
+                                                        <tbody ng-repeat="i in items">
+                                                        <th> [{ counter + $index + 1}] </th>
+                                                        <th><a href=[{i.detail_url}]> [{i.title}]</a></th>
+                                                        <th> [{i.group}] </th>
+                                                        <th>[{i.owner}]</th>
+                                                        <th>[{i.last_auditor}]</th>
+                                                        <th>[{i.date_updated}]</th>
+                                                        <th ng-init="approvalUrl = i.detail_url">
+                                                            <a href = [{approvalUrl}]>
+                                                                <button  type="button", class="btn btn-gd-primary">Edit</button>
+                                                            </a>
+                                                        </th>
+                                                        <th ng-init="approvalUrl = i.detail_url + '?user_role=manager'">
+                                                            <a href = [{approvalUrl}]>
+                                                                <button  type="button", class="btn btn-gd-primary">Unapprove</button>
+                                                            </a>
+                                                        </th>
 
                                                     </table>
                                                     <div id="showallAdminDraftmapspag_panding">
@@ -189,9 +259,16 @@ footer
                                                             </tr>
                                                         </thead>
 
-                                                            <tbody id="allAdminDraftmaps_denied">
-
-                                                            </tbody>
+                                                        <tbody ng-repeat="i in items">
+                                                            <th> [{ counter + $index + 1}] </th>
+                                                            <th><a href=[{i.detail_url}]> [{i.title}]</a></th>
+                                                            <th> [{i.group}] </th>
+                                                            <th>[{i.owner}]</th>
+                                                            <th>[{i.date_created}]</th>
+                                                            <th> <button type="button" class="btn btn-gd-primary" ng-click="deleteMapModal(i.id)" style="color:#fff;">
+                                                                {% trans "Delete Map" %}</button>
+                                                            </th>
+                                                        </tbody>
 
                                                     </table>
                                                     <div id="showallAdminDraftmapspag_denied">
@@ -214,9 +291,14 @@ footer
                                                             </tr>
                                                         </thead>
 
-                                                            <tbody id="allAdminDraftMaps_active">
-
-                                                            </tbody>
+                                                        <tbody ng-repeat="i in items">
+                                                            <th> [{ counter + $index + 1}] </th>
+                                                            <th><a href=[{i.detail_url}]> [{i.title}]</a></th>
+                                                            <th> [{i.group}] </th>
+                                                            <th>[{i.owner}]</th>
+                                                            <th>[{i.last_auditor}]</th>
+                                                            <th>[{i.date_updated}]</th>
+                                                        </tbody>
 
                                                     </table>
                                                     <div id="showallAdminDraftMapspag_active">
@@ -225,6 +307,14 @@ footer
                                                 </ul>
                                               </article>
                                             </div>
+
+                                                <div>
+                                                    <a href="" ng-show="previousUrl" ng-click="previousItems()"> <strong><i class="fa fa-angle-left"></i><span>Previous</span> </strong></a>
+                                    &nbsp; &nbsp; &nbsp;
+                                                    <a href=""  ng-show="nextUrl" ng-click="nextItems()"> <strong> <span>Next</span><i class="fa fa-angle-right"></i> </strong></a>
+                                                    <br><br><br>
+                                                </div>
+
                                           </div>
                                       </div>
                                     </div>
@@ -247,116 +337,8 @@ footer
 
 {% block extra_script %}
 {{ block.super }}
-    <script type="text/javascript">
-        $(document).ready(function(){
-            $("#user_list").click(function(){
-                $("#viewuserlist_none").css("display", "none");
-                //alert("test");
-                //url = '{% url 'api_dispatch_list' api_name='api' resource_name='profiles' %}'+ '?group='+ '{{ object.slug }}';
-                url = '{% url 'api_dispatch_list' api_name='api' resource_name='profiles' %}';
-                 $.ajax({
-                        cache: false,
-                        type: 'GET',
-                        url: url,
-                        data: {},
-                        contentType: "application/json; charset=utf-8",
-                        dataType: "json",
-                        success: function(jsondata) {
-                            console.log("success");
-                            //console.log(JSON.stringify(jsondata));
-                            var data = eval(jsondata.objects);
-                        var output='';
-                            output +='<hr />';
-                      $.each(data, function(i, profile) {
-                        //alert(item.date);
-                            output +='<article>';
-                            output +='<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">';
-                            output +='<div class="grid-container">';
-                            output +='<div class="top-content text-center">';
-                            output +='<div class="avater">';
-                            output +='<a href="'+ profile.profile_detail_url +'?content=layers">';
-                            output +='<div class="avater-img">';
-                            output +='<div class="avater-img-mid">';
-                            output +='<div class="text-center">';
-                            output +='<img height="100" class="img-circle" src="'+ profile.avatar_100 +'" alt="Profile Image"/>';
-                            output +='</div>';
-                            output +='</div>';
-                            output +='</div>';
-                            output +='<div class="txt" style="min-height: 60px;">';
-                                if(profile.first_name != ''){
-                            output +=''+ profile.first_name+' '+  profile.last_name +' ';
-                                }else{
-                            output +=''+ profile.username +' ';
-                                }
-                            output +='</div>';
-                            output +='</a>';
-                            output +='</div>';
-                            output +='<div class="details pro-org" title="'+profile.organization+'">';
-                                    if(profile.organization){
-                            output +='<div>';
-                            output +=''+ profile.organization +'';
-                            output +='</div>';
-                                    }else{
-                            output +='<div>';
-                            output +='No Organization info';
-                            output +='</div>';
-                                    }
-                            output +='</div>';
-                            output +='</div>';
-                            output +='<div class="bottom-content">';
-                            output +='<div class="row">';
-                            output +='<div class="profile-items text-center">';
-                            output +='<ul class="list-inline">';
-                            output +='<li>';
-                            output +='<a href="'+ profile.profile_detail_url +'?content=layers" >';
-                            output +='<span class="fa-layers-group fa-stack fa-rotate-90" style="font-size:12px;">';
-                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: 0;"></i>';
-                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: -.15em;color:#fff;"></i>';
-                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: -.3em;"></i>';
-                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: -.45em;color:#fff;"></i>';
-                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: -.6em;"></i>';
-                            output +='</span>';
-                            output +=''+ profile.layers_count +'';
-                            output +='</a>';
-                            output +='</li>';
-                            output +='<li>';
-                            output +='<a href="'+ profile.profile_detail_url +'?content=documents">';
-                            output +='<i class="fa fa-file-text-o"></i> ';
-                            output +=''+ profile.documents_count +'';
-                            output +='</a>';
-                            output +='</li>';
-                            output +='<li>';
-                            output +='<a href="'+ profile.profile_detail_url +'?content=maps">';
-                            output +='<i class="fa fa-map-marker"></i> ';
-                            output +=''+ profile.maps_count +'';
-                            output +='</a>';
-                            output +='</li>';
-                            output +='</ul>';
-                            output +='</div>';
-                            output +='</div>';
-                            output +='</div>';
-                            output +='</div>';
-                            output +='</div>';
-                            output +='</article>';
-                        });
-                        $("#viewuserlist").append(output);
-                        },
-                        error: function(xhr, ajaxOptions, thrownError) {
-                            console.log("error");
-                        }
-                 });
 
-            });
-        });
-    </script>
 <script>
-function mapLayer(id){
-        //console.log(id);
-        var sleID = parseInt(id);
-        $("#testid").html(id);
-        $('#_delete_map').modal('show');
-        $('#Map_Del').attr('action', '../../maps/'+ sleID +'/delete');
-    }
 
 $(function () {
     $("#follow_button, #unfollow_button").click(function () {
@@ -367,381 +349,14 @@ $(function () {
 });
 </script>
 
-<script type="text/javascript" language="JavaScript">
-        var csrftoken = "{{ csrf_token }}";
-        $("#select-all-map").change(function () {
-            var status = $(this).is(":checked") ? true : false;
-            $('.map-to-approve').prop('checked', status);
-            enableOrDisableApproveAllButton();
-        });
-        function enableOrDisableApproveAllButton() {
-            var selecteds = [];
-            $('.map-to-approve:checked').each(function () {
-                selecteds.push($(this).val());
-            });
-            if(selecteds.length> 0) {
-                $('#approve-all-button').removeClass('disabled');
-            }else {
-                $('#approve-all-button').addClass('disabled');
-            }
-        }
-        function disableAllContinueForApprovalButton(condition) {
-            if (condition) {
-                $('.approve-button').addClass('disabled');
-            } else {
-                $('.approve-button').removeClass('disabled');
-            }
-        }
-        function error(jqXHR, textStatus, errorThrown) {
-            $('#approve-all-button').removeClass('disabled');
-            enableOrDisableApproveAllButton();
-            $.toaster(errorThrown, 'Error', 'danger');
-        }
-        function success(data, textStatus, jqXHR) {
-            $.toaster('All Maps Approved', 'Success', 'success');
-            $('#approve-all-button').removeClass('disabled');
-            enableOrDisableApproveAllButton();
-            showAdminDraftMap();
+<script>
+    window.csrf = "{{ csrf_token }}";
+</script>
 
-        }
-        function postAllMapForApproval(mapIds) {
-            var data = {
-                "map_ids": mapIds
-            };
-            $.ajax({
-                url: "/api/maps/approve-multiple-maps/",
-                method: "PUT",
-                headers: {
-                    'X-CSRFToken': csrftoken
-                },
-                data: JSON.stringify(data),
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                error: error,
-                success: success
-            });
-        }
-        function approveAll(e) {
-            var selecteds = [];
-            $('.map-to-approve:checked').each(function () {
-                selecteds.push($(this).val());
-            });
-            $('#approve-all-button').addClass('disabled');
-            disableAllContinueForApprovalButton(true);
-            postAllMapForApproval(selecteds);
-        }
-        function showAdminDraftMap(targeturl){
-            var limit = 25;
-            if(targeturl== undefined){
-                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_map_api' %}?limit="+ limit +"&resource_state=user_approval_request_list&user_type=admin";
-            }
-            else{
-                var url = targeturl;
-            }
-            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
-                $.ajax({
-                    cache: true,
-                    type: 'GET',
-                    url: url,
-                    data: {},
-                    dataType: "json",
-                    success: function(jsondata) {
-                        console.log("success");
-                        //console.log(JSON.stringify(jsondata));
-                    var data = eval(jsondata.objects);
-                    var meta = eval(jsondata.meta);
-                    var t_count = meta.total_count;
-                    var t_limit = meta.limit;
-                    var t_offset = meta.offset;
-                    var t_next = meta.next;
-                    var t_previous = meta.previous;
-                        //alert(t_offset);
-                    var output='';
-                    var outputpag='';
-                  var offset = meta.offset;
-                  $.each(data, function(i, item) {
-                    offset = offset + 1;
-                    output+='<tr>';
-                    output+='<td>'+ '<input type="checkbox" value='+item.id+' class="map-to-approve" onclick="enableOrDisableApproveAllButton();">' +'</td>';
-                    output+='<td>'+ offset +'</td>';
-                    output+='<td><a href='+ item.detail_url +'>'+ item.title+'</a></td>';
-                    output+='<td>'+ item.group +'</td>';
-                    output+='<td>'+ item.current_iteration +'</td>';
-                    output+='<td>'+ item.owner +'</td>';
-                    output+='<td>'+ item.date_updated +'</td>';
-                    output+='<td><a href="'+ item.detail_url +'?user_role=manager" class="btn btn-gd-primary approve-button">{% trans "Continue to Approve/Deny" %}</a></td>';
-                    output+='</tr>';
-                  });
-                  outputpag+='<div>';
-                  outputpag+='<nav>';
-                  outputpag+='<ul class="pagination pull-left">';
-                  var nexturl = meta.next;
-                  //alert(t_count);
-                  var previousurl = meta.previous;
-                  if(previousurl){
-                  outputpag+='<li><a href="javascript:;" id="previousAdminDraftmaps"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
-                  }
-                  if(nexturl){
-                  outputpag+='<li><a href="javascript:;" id="nextAdminDraftmaps"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
-                    }
-                  outputpag+='</ul>';
-                  outputpag+='</nav>';
-                  outputpag+='</div>';
-                   $("#showallAdminDraftmaps").html(output);
-                   $("#showallAdminDraftmapspag").html(outputpag);
-                   $("#nextAdminDraftmaps").click(function(){
-                        showAdminDraftMap(nexturl)
-                   });
-                   $("#previousAdminDraftmaps").click(function(){
-                        showAdminDraftMap(previousurl)
-                   });
-                    },
-                    error: function(xhr, ajaxOptions, thrownError) {
-                        console.log("error");
-                    }
-                });
-        }
+<script src="{{ STATIC_URL }}Scripts/lib/angular-animate.min.js"></script>
 
-        $(document).ready(function(){
-            showAdminDraftMap();
-        });
- </script>
-<script type="text/javascript" language="JavaScript">
-        function showAdminDataMaps_Approve(targeturl){
-            var limit = 25;
-            if(targeturl== undefined){
-                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_map_api' %}?limit="+ limit +"&resource_state=approved_list&user_type=admin";
-            }
-            else{
-                var url = targeturl;
-            }
-            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
-                $.ajax({
-                    cache: true,
-                    type: 'GET',
-                    url: url,
-                    data: {},
-                    dataType: "json",
-                    success: function(jsondata) {
-                        console.log("success");
-                        //console.log(JSON.stringify(jsondata));
-                    var data = eval(jsondata.objects);
-                    var meta = eval(jsondata.meta);
-                    var t_count = meta.total_count;
-                    var t_limit = meta.limit;
-                    var t_offset = meta.offset;
-                    var t_next = meta.next;
-                    var t_previous = meta.previous;
-                        //alert(t_offset);
-                    var output='';
-                    var outputpag='';
-                    var i =1;
-                    var offset = meta.offset;
-                  $.each(data, function(i, item) {
-                  //alert(item.date_created)
-                    offset = offset + 1;
-                    output+='<tr>';
-                    output+='<td>'+ offset +'</td>';
-                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
-                    output+='<td>'+ item.group +'</td>';
-                    output+='<td>'+ item.owner +'</td>';
-                    output+='<td>'+ item.last_auditor +'</td>';
-                    output+='<td>'+ item.date_updated +'</td>';
-                    output+='<td><a href="'+ item.detail_url +'" class="btn btn-gd-primary">{% trans "Edit" %}</a></td>';
-                    output+='<td><a href="'+ item.detail_url +'?user_role=manager" class="btn btn-gd-primary">{% trans "Unapproved" %}</a></td>';
-                    output+='</tr>';
-                  });
-                  outputpag+='<div>';
-                  outputpag+='<nav>';
-                  outputpag+='<ul class="pagination pull-left">';
-                  var nexturl = meta.next;
-                  //alert(t_count);
-                  var previousurl = meta.previous;
-                  if(previousurl){
-                  outputpag+='<li><a href="javascript:;" id="previousAdminDraftmaps_pen"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
-                  }
-                  if(nexturl){
-                  outputpag+='<li><a href="javascript:;" id="nextAdminDraftmaps_pen"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
-                    }
-                  outputpag+='</ul>';
-                  outputpag+='</nav>';
-                  outputpag+='</div>';
-                   $("#allAdminDraftmaps_pen").html(output);
-                   $("#showallAdminDraftmapspag_panding").html(outputpag);
-                   $("#nextAdminDraftmaps_pen").click(function(){
-                        showAdminDataMaps_Approve(nexturl)
-                   });
-                   $("#previousAdminDraftmaps_pen").click(function(){
-                        showAdminDataMaps_Approve(previousurl)
-                   });
-                    },
-                    error: function(xhr, ajaxOptions, thrownError) {
-                        console.log("error");
-                    }
-                });
-        }
-
-        $(document).ready(function(){
-            $("#Approved_list_layers_admin").click(function(){
-                showAdminDataMaps_Approve();
-                });
-         });
- </script>
-<script type="text/javascript" language="JavaScript">
-        function showAdminDataMaps_draft(targeturl){
-            var limit = 25;
-            if(targeturl== undefined){
-                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_map_api' %}?limit="+ limit +"&resource_state=user_draft_list&user_type=admin";
-            }
-            else{
-                var url = targeturl;
-            }
-            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
-                $.ajax({
-                    cache: true,
-                    type: 'GET',
-                    url: url,
-                    data: {},
-                    dataType: "json",
-                    success: function(jsondata) {
-                        console.log("success");
-                        //console.log(JSON.stringify(jsondata));
-                    var data = eval(jsondata.objects);
-                    var meta = eval(jsondata.meta);
-                    var t_count = meta.total_count;
-                    var t_limit = meta.limit;
-                    var t_offset = meta.offset;
-                    var t_next = meta.next;
-                    var t_previous = meta.previous;
-                        //alert(t_offset);
-                    var output='';
-                    var outputpag='';
-                    var i =1;
-                  var offset = meta.offset;
-                  $.each(data, function(i, item) {
-                    offset = offset + 1;
-                    output+='<tr>';
-                    output+='<td>'+ offset +'</td>';
-                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
-                    output+='<td>'+ item.group +'</td>';
-                    output+='<td>'+ item.owner +'</td>';
-                    output+='<td>'+ item.date_created +'</td>';
-                    output+='<td><button type="button" class="btn btn-gd-primary" onclick="mapLayer('+ item.id +')" style="color:#fff;">{% trans "Delete Map" %}</button></td>';
-                    output+='</tr>';
-                  });
-                  outputpag+='<div>';
-                  outputpag+='<nav>';
-                  outputpag+='<ul class="pagination pull-left">';
-                  var nexturl = meta.next;
-                  //alert(t_count);
-                  var previousurl = meta.previous;
-                  if(previousurl){
-                  outputpag+='<li><a href="javascript:;" id="previousAdminDraftmaps_denied"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
-                  }
-                  if(nexturl){
-                  outputpag+='<li><a href="javascript:;" id="nextAdminDraftmaps_denied"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
-                    }
-                  outputpag+='</ul>';
-                  outputpag+='</nav>';
-                  outputpag+='</div>';
-                   $("#allAdminDraftmaps_denied").html(output);
-                   $("#showallAdminDraftmapspag_denied").html(outputpag);
-                   $("#nextAdminDraftmaps_denied").click(function(){
-                        showAdminDataMaps_draft(nexturl)
-                   });
-                   $("#previousAdminDraftmaps_denied").click(function(){
-                        showAdminDataMaps_draft(previousurl)
-                   });
-                    },
-                    error: function(xhr, ajaxOptions, thrownError) {
-                        console.log("error");
-                    }
-                });
-        }
-
-        $(document).ready(function(){
-            $("#Admin_userdraft_maps").click(function(){
-                showAdminDataMaps_draft();
-                });
-         });
- </script>
-<script type="text/javascript" language="JavaScript">
-        function showAdminDataMaps_denied(targeturl){
-            var limit = 25;
-            if(targeturl== undefined){
-                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_map_api' %}?limit="+ limit +"&resource_state=denied_list&user_type=admin";
-            }
-            else{
-                var url = targeturl;
-            }
-            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
-                $.ajax({
-                    cache: true,
-                    type: 'GET',
-                    url: url,
-                    data: {},
-                    dataType: "json",
-                    success: function(jsondata) {
-                        console.log("success");
-                        console.log(JSON.stringify(jsondata));
-                    var data = eval(jsondata.objects);
-                    var meta = eval(jsondata.meta);
-                    var t_count = meta.total_count;
-                    var t_limit = meta.limit;
-                    var t_offset = meta.offset;
-                    var t_next = meta.next;
-                    var t_previous = meta.previous;
-                        //alert(t_offset);
-                    var output='';
-                    var outputpag='';
-                    var i =1;
-                  var offset = meta.offset;
-                  $.each(data, function(i, item) {
-                    offset = offset + 1;
-                    output+='<tr>';
-                    output+='<td>'+ offset +'</td>';
-                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
-                    output+='<td>'+ item.group +'</td>';
-                    output+='<td>'+ item.owner +'</td>';
-                    output+='<td>'+ item.last_auditor +'</td>';
-                    output+='<td>'+ item.date_updated +'</td>';
-                    output+='</tr>';
-                  });
-                  outputpag+='<div>';
-                  outputpag+='<nav>';
-                  outputpag+='<ul class="pagination pull-left">';
-                  var nexturl = meta.next;
-                  //alert(t_count);
-                  var previousurl = meta.previous;
-                  if(previousurl){
-                  outputpag+='<li><a href="javascript:;" id="previousAdminDraftMaps_active"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
-                  }
-                  if(nexturl){
-                  outputpag+='<li><a href="javascript:;" id="nextAdminDraftMaps_active"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
-                    }
-                  outputpag+='</ul>';
-                  outputpag+='</nav>';
-                  outputpag+='</div>';
-                   $("#allAdminDraftMaps_active").html(output);
-                   $("#showallAdminDraftMapspag_active").html(outputpag);
-                   $("#nextAdminDraftMaps_active").click(function(){
-                        showAdminDataMaps_denied(nexturl)
-                   });
-                   $("#previousAdminDraftMaps_active").click(function(){
-                        showAdminDataMaps_denied(previousurl)
-                   });
-                    },
-                    error: function(xhr, ajaxOptions, thrownError) {
-                        console.log("error");
-                    }
-                });
-        }
-
-        $(document).ready(function(){
-            $("#Admin_dined_mapslist").click(function(){
-                showAdminDataMaps_denied();
-                });
-         });
- </script>
-
+<script src="{{ STATIC_URL }}workspace/js/apps.js"></script>
+<script src="{{ STATIC_URL }}workspace/js/admin.controllers.js"></script>
+<script src="{{ STATIC_URL }}workspace/js/filters.js"></script>
+<script src="{{ STATIC_URL }}workspace/js/services.js"></script>
 {% endblock %}

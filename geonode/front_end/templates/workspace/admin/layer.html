@@ -90,7 +90,7 @@
         </style>
     {% endif %}
 
-    <div class="row">
+    <div class="row" ng-app="workspaceApp" ng-controller="AdminLayerController">
 
         <div class="col-sm-2 col-xs-1 col-md-2 workspace-sidebar">
                     
@@ -111,6 +111,44 @@
 
                    <div class="col-sm-10 col-sm-offset-2 col-xs-11 col-xs-offset-1 col-md-10 col-md-offset-2 main">
                 <h1 class="d-title" style="margin: 0">{% trans "Admin Workspace" %}</h1>
+
+                <!--MODAL--jahangir--->
+                <!--this modal is used for delete layer from user approval request list-->
+                <!--this modal will be popped when 'Delete Layer' button is clicked-->
+                <!--in layer user approval request list-->
+
+                <div class="modal fade" id="_delete_layer" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" style="width:500px;">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title text-center" id="myModalLabel">{% trans "Delete Layer" %}</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group" ng-controller="AdminLayerController">
+                                    <h5> Are you sure you want to Delete this layer ? </h5>
+
+                                </div>
+                            </div>
+                            <div class="alert hidden" id="bulk_perms_message">
+                                <p class="message">}</p>
+                                <p class="extra_content"></p>
+                            </div>
+                            <form method="post" id="Layer_Del" action="">
+
+                                <!--<form id=""  method="post"  action="{% url "layer-delete" 1 %}">-->
+                                {% csrf_token %}
+                                <div class="modal-footer">
+                                    <button class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
+                                    <button type="submit" class="btn btn-primary"  ng-click="deleteDraftLayer()">{% trans "Yes" %}</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!--END MODAL-->
+
                 <div class="gd-content">
                         
                                 <div class="row">
@@ -142,22 +180,28 @@
                     
                                       <div id="viewuserlist_none">
                                             <ul class="nav nav-tabs">
-                                              <li class="active"><a href="#user-approval-request" data-toggle="tab">{% trans "User Approval Request" %}</a></li>
-                                              <li><a href="#approved" id="Approved_list_layers_admin" data-toggle="tab">{% trans "Approved" %}</a></li>
-                                              <li><a href="#user-drafts" id="Admin_userdraft" data-toggle="tab">{% trans "User Drafts" %}</a></li>
-                                              <li><a href="#denied-layers" id="Admin_dined_list" data-toggle="tab">{% trans "Denied Layers" %}</a></li>
+                                              <li class="active" ng-click="userApprovalRequestList()"><a href="#user-approval-request" data-toggle="tab">{% trans "User Approval Request" %}</a></li>
+                                              <li ng-click="approvedList()"><a href="#approved" id="Approved_list_layers_admin" data-toggle="tab">{% trans "Approved" %}</a></li>
+                                              <li ng-click="userDraftsList()"><a href="#user-drafts" id="Admin_userdraft" data-toggle="tab">{% trans "User Drafts" %}</a></li>
+                                              <li ng-click="deniedList()"><a href="#denied-layers" id="Admin_dined_list" data-toggle="tab">{% trans "Denied Layers" %}</a></li>
                                             </ul>
+
+                                            <div class="col-md-4">
+                                                <input class="form-control mr-sm-2" type="search" ng-model-options="{ allowInvalid: true, debounce: 500 }" ng-model="searchString"  ng-change="backendSearch()" placeholder="Search" aria-label="Search">
+                                            </div>
+                                            <br><br><br>
+
                                         <div class="tab-content">
                                           <article id="user-approval-request" class="tab-pane active">
                                             <ul class="no-style-list">
-                                                <a class="btn btn-gd-primary disabled" id="approve-all-button" style="margin-bottom: 10px" onclick="approveAll()">{% trans "Approve All" %}</a>
+                                                <a class="btn btn-gd-primary" id="approve-all-button" style="margin-bottom: 10px" ng-disabled="selectedItems.length==0" ng-click="approveSelectedItems()" >{% trans "Approve All" %}</a>
                                                 
                                                 <div class="table-responsive">
                                                 <table class="table table-hover" style="background:#ffffff;">
                                                     <thead>
                                                         <tr>
                                                             <th>
-                                                                <input type="checkbox" value="" id="select-all-layer">
+                                                                <input type="checkbox" value="" ng-checked="checkAll"  ng-click="toggleAll($event)">
                                                             </th>
                                                             <th>Serial No</th>
                                                             <th>Layer Title</th>
@@ -170,9 +214,26 @@
                                                         </tr>
                                                     </thead>
 
-                                                        <tbody id="showallAdminDraftlayers">
+                                                    <tbody ng-repeat="i in items">
+                                                        <th>
+                                                            <input type="checkbox" ng-checked="checkAll" ng-click="toggleSelection($event, i.id)">
+                                                        </th>
+                                                        <th> [{ counter + $index + 1}] </th>
+                                                        <th><a href=[{i.detail_url}]> [{i.title}]</a></th>
+                                                        <th> [{i.group}] </th>
+                                                        <th>[{i.current_iteration}]</th>
+                                                        <th>[{i.owner}]</th>
+                                                        <th>[{i.date_updated}]</th>
+                                                        <th ng-init="approvalUrl = i.detail_url + '?user_role=manager'">
+                                                            <a href = [{approvalUrl}]>
+                                                                <button  type="button", class="btn btn-gd-primary">Continue to Approve/Deny</button>
+                                                            </a>
+                                                        </th>
+                                                        <th> <button type="button" class="btn btn-gd-primary" ng-click="deleteLayerModal(i.id)" style="color:#fff;">
+                                                            {% trans "Delete Layer" %}</button>
+                                                        </th>
 
-                                                        </tbody>
+                                                    </tbody>
 
                                                 </table>
                                             </div>
@@ -199,9 +260,28 @@
                                                         </tr>
                                                     </thead>
 
-                                                        <tbody id="allAdminDraftlayers_pen">
+                                                    <tbody ng-repeat="i in items">
+                                                        <th> [{ counter + $index + 1}] </th>
+                                                        <th><a href=[{i.detail_url}]> [{i.title}]</a></th>
+                                                        <th> [{i.group}] </th>
+                                                        <th>[{i.owner}]</th>
+                                                        <th>[{i.last_auditor}]</th>
+                                                        <th>[{i.date_updated}]</th>
+                                                        <th ng-init="approvalUrl = i.detail_url">
+                                                            <a href = [{approvalUrl}]>
+                                                                <button  type="button", class="btn btn-gd-primary">Edit</button>
+                                                            </a>
+                                                        </th>
+                                                        <th> <button type="button" class="btn btn-gd-primary" ng-click="deleteLayerModal(i.id)" style="color:#fff;">
+                                                            {% trans "Delete Layer" %}</button>
+                                                        </th>
+                                                        <th ng-init="approvalUrl = i.detail_url + '?user_role=manager'">
+                                                            <a href = [{approvalUrl}]>
+                                                                <button  type="button", class="btn btn-gd-primary">Unapprove</button>
+                                                            </a>
+                                                        </th>
 
-                                                        </tbody>
+                                                    </tbody>
 
                                                 </table>
                                                 <div id="showallAdminDraftlayerspag_panding">
@@ -223,9 +303,17 @@
                                                         </tr>
                                                     </thead>
 
-                                                        <tbody id="allAdminDraftlayers_denied">
+                                                    <tbody ng-repeat="i in items">
+                                                        <th> [{ counter + $index + 1}] </th>
+                                                        <th><a href=[{i.detail_url}]> [{i.title}]</a></th>
+                                                        <th> [{i.group}] </th>
+                                                        <th>[{i.owner}]</th>
+                                                        <th>[{i.date_created}]</th>
+                                                        <th> <button type="button" class="btn btn-gd-primary" ng-click="deleteLayerModal(i.id)" style="color:#fff;">
+                                                            {% trans "Delete Layer" %}</button>
+                                                        </th>
 
-                                                        </tbody>
+                                                    </tbody>
 
                                                 </table>
                                                 <div id="showallAdminDraftlayerspag_denied">
@@ -248,9 +336,15 @@
                                                         </tr>
                                                     </thead>
 
-                                                        <tbody id="allAdminDraftlayers_active">
+                                                    <tbody ng-repeat="i in items">
+                                                        <th> [{ counter + $index + 1}] </th>
+                                                        <th><a href=[{i.detail_url}]> [{i.title}]</a></th>
+                                                        <th> [{i.group}] </th>
+                                                        <th>[{i.owner}]</th>
+                                                        <th>[{i.last_auditor}]</th>
+                                                        <th>[{i.date_updated}]</th>
 
-                                                        </tbody>
+                                                    </tbody>
 
                                                 </table>
                                                 <div id="showallAdminDraftlayerspag_active">
@@ -259,6 +353,15 @@
                                             </ul>
                                           </article>
                                         </div>
+
+
+                                            <div>
+                                                <a href="" ng-show="previousUrl" ng-click="previousItems()"> <strong><i class="fa fa-angle-left"></i><span>Previous</span> </strong></a>
+                                    &nbsp; &nbsp; &nbsp;
+                                                <a href=""  ng-show="nextUrl" ng-click="nextItems()"> <strong> <span>Next</span><i class="fa fa-angle-right"></i> </strong></a>
+                                                <br><br><br>
+                                            </div>
+
                                       </div>
                                   </div>
                                 </div>
@@ -272,516 +375,22 @@
 {% endblock %}
 
 {% block extra_script %}
+<script>
+    window.csrf = "{{ csrf_token }}";
+</script>
 
-{{ block.super }}
-    <script type="text/javascript">
-        $(document).ready(function(){
-            $("#user_list").click(function(){
-                $("#viewuserlist_none").css("display", "none");
-                //url = '{% url 'api_dispatch_list' api_name='api' resource_name='profiles' %}'+ '?group={{gg}}';
-                url = '{% url 'api_dispatch_list' api_name='api' resource_name='profiles' %}';
-                 $.ajax({
-                        cache: false,
-                        type: 'GET',
-                        url: url,
-                        data: {},
-                        contentType: "application/json; charset=utf-8",
-                        dataType: "json",
-                        success: function(jsondata) {
-                            console.log("success");
-                            //console.log(JSON.stringify(jsondata));
-                            var data = eval(jsondata.objects);
-                        var output='';
-                            output +='<hr />';
+<script src="{{ STATIC_URL }}Scripts/lib/angular.min.js"></script>
+<script src="{{ STATIC_URL }}Scripts/lib/angular-animate.min.js"></script>
+<script src="{{ STATIC_URL }}Scripts/lib/angular-cookies.min.js"></script>
+<script src="{{ STATIC_URL }}Scripts/lib/angular-sanitize.min.js"></script>
 
-                      var offset = meta.offset;
-                      $.each(data, function(i, profile) {
-                        //alert(profile.id);
-                            offset = offset + 1;
-                            output+='<td>'+ offset +'</td>';
-                            output +='<article>';
-                            output +='<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">';
-                            output +='<div class="grid-container">';
-                            output +='<div class="top-content text-center">';
-                            output +='<div class="avater">';
-                            output +='<a href="'+ profile.profile_detail_url +'?content=layers">';
-                            output +='<div class="avater-img">';
-                            output +='<div class="avater-img-mid">';
-                            output +='<div class="text-center">';
-                            output +='<img height="100" class="img-circle" src="'+ profile.avatar_100 +'" alt="Profile Image"/>';
-                            output +='</div>';
-                            output +='</div>';
-                            output +='</div>';
-                            output +='<div class="txt" style="min-height: 60px;">';
-                                if(profile.first_name != ''){
-                            output +=''+ profile.first_name+' '+  profile.last_name +' ';
-                                }else{
-                            output +=''+ profile.username +' ';
-                                }
-                            output +='</div>';
-                            output +='</a>';
-                            output +='</div>';
-                            output +='<div class="details pro-org" title="'+profile.organization+'">';
-                                    if(profile.organization){
-                            output +='<div>';
-                            output +=''+ profile.organization +'';
-                            output +='</div>';
-                                    }else{
-                            output +='<div>';
-                            output +='No Organization info';
-                            output +='</div>';
-                                    }
-                            output +='</div>';
-                            output +='</div>';
-                            output +='<div class="bottom-content">';
-                            output +='<div class="row">';
-                            output +='<div class="profile-items text-center">';
-                            output +='<ul class="list-inline">';
-                            output +='<li>';
-                            output +='<a href="'+ profile.profile_detail_url +'?content=layers" >';
-                            output +='<span class="fa-layers-group fa-stack fa-rotate-90" style="font-size:12px;">';
-                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: 0;"></i>';
-                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: -.15em;color:#fff;"></i>';
-                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: -.3em;"></i>';
-                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: -.45em;color:#fff;"></i>';
-                            output +='<i class="fa fa-stop fa-layers fa-stack-1x" style="left: -.6em;"></i>';
-                            output +='</span>';
-                            output +=''+ profile.layers_count +'';
-                            output +='</a>';
-                            output +='</li>';
-                            output +='<li>';
-                            output +='<a href="'+ profile.profile_detail_url +'?content=documents">';
-                            output +='<i class="fa fa-file-text-o"></i> ';
-                            output +=''+ profile.documents_count +'';
-                            output +='</a>';
-                            output +='</li>';
-                            output +='<li>';
-                            output +='<a href="'+ profile.profile_detail_url +'?content=maps">';
-                            output +='<i class="fa fa-map-marker"></i> ';
-                            output +=''+ profile.maps_count +'';
-                            output +='</a>';
-                            output +='</li>';
-                            output +='</ul>';
-                            output +='</div>';
-                            output +='</div>';
-                            output +='</div>';
-                            output +='</div>';
-                            output +='</div>';
-                            output +='</article>';
-                        });
-                        $("#viewuserlist").append(output);
-                        },
-                        error: function(xhr, ajaxOptions, thrownError) {
-                            console.log("error");
-                        }
-                 });
-            });
-        });
-    </script>
-    <script>
-    function deleteLayer(id){
-        //console.log(id);
-        var sleID = parseInt(id);
-        $("#testid").html(id);
-        $('#_delete_layer').modal('show');
-        $('#Layer_Del').attr('action', '../../layers/'+ sleID +'/delete');
-    }
+<script src="{{ STATIC_URL }}workspace/js/apps.js"></script>
+<script src="{{ STATIC_URL }}workspace/js/services.js"></script>
+<script src="{{ STATIC_URL }}workspace/js/admin.controllers.js"></script>
+<script src="{{ STATIC_URL }}workspace/js/filters.js"></script>
 
-    $(function () {
-        $("#follow_button, #unfollow_button").click(function () {
-            $.post($(this).attr("href"), {});
-            $(this).parent().find("#follow_button, #unfollow_button").toggle();
-            return false
-        });
-    });
-    </script>
-<script type="text/javascript" language="JavaScript">
-        var csrftoken = "{{ csrf_token }}";
-        $("#select-all-layer").change(function () {
-            var status = $(this).is(":checked") ? true : false;
-            $('.layer-to-approve').prop('checked', status);
-            enableOrDisableApproveAllButton();
-        });
-        function disableAllContinueForApprovalButton(condition) {
-            if(condition) {
-                $('.approve-button').addClass('disabled');
-            }else {
-                $('.approve-button').removeClass('disabled');
-            }
-        }
-        function enableOrDisableApproveAllButton() {
-            var selecteds = [];
-            $('.layer-to-approve:checked').each(function () {
-                selecteds.push($(this).val());
-            });
-            if(selecteds.length> 0) {
-                $('#approve-all-button').removeClass('disabled');
-            }else {
-                $('#approve-all-button').addClass('disabled');
-            }
-        }
-        function error(jqXHR,textStatus,errorThrown) {
-            $('#approve-all-button').removeClass('disabled');
-            $.toaster(errorThrown, 'Error', 'danger');
-            enableOrDisableApproveAllButton();
-        }
-        function success(data,textStatus,jqXHR) {
-            $.toaster('All Layer Approved', 'Success', 'success');
-            $('#approve-all-button').removeClass('disabled');
-            enableOrDisableApproveAllButton();
-            showAdminDraftLayer();
 
-        }
-        function postAllLayersForApproval(layersIds) {
-            var data = {
-                "layer_ids": layersIds
-            };
-            $.ajax({
-                url: "/api/layers/approve-multiple-layers/",
-                method: "PUT",
-                headers: {
-                    'X-CSRFToken': csrftoken
-                },
-                data: JSON.stringify(data),
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                error: error,
-                success: success
-            });
-        }
-        function approveAll(e) {
-            var selecteds = [];
-            $('.layer-to-approve:checked').each(function () {
-                selecteds.push($(this).val());
-            });
-            $('#approve-all-button').addClass('disabled');
-            disableAllContinueForApprovalButton(true);
-            postAllLayersForApproval(selecteds);
-        }
-        function showAdminDraftLayer(targeturl){
-            var limit = 25;
-            if(targeturl== undefined){
-                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_layer_api' %}?limit="+ limit +"&resource_state=user_approval_request_list&user_type=admin";
-            }
-            else{
-                var url = targeturl;
-            }
-            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
-                $.ajax({
-                    cache: true,
-                    type: 'GET',
-                    url: url,
-                    data: {},
-                    dataType: "json",
-                    success: function(jsondata) {
-                        console.log("success");
-                        //console.log(JSON.stringify(jsondata));
-                    var data = eval(jsondata.objects);
-                    var meta = eval(jsondata.meta);
-                    var t_count = meta.total_count;
-                    var t_limit = meta.limit;
-                    var t_offset = meta.offset;
-                    var t_next = meta.next;
-                    var t_previous = meta.previous;
-                        //alert(t_offset);
-                    var output='';
-                    var outputpag='';
-                    var offset = meta.offset;
-                  $.each(data, function(i, item) {
-                    offset = offset + 1;
-                    output+='<tr>';
-                    output+='<td>'+ '<input type="checkbox" value='+item.id+' class="layer-to-approve" onclick="enableOrDisableApproveAllButton();">' +'</td>';
-                    output+='<td>'+ offset +'</td>';
-                    output+='<td><a href='+ item.detail_url +'>'+ item.title+'</a></td>';
-                    output+='<td>'+ item.group +'</td>';
-                    output+='<td>'+ item.current_iteration +'</td>';
-                    output+='<td>'+ item.owner +'</td>';
-                    output+='<td>'+ item.date_updated +'</td>';
-                      {% if FRONT_END_SETTINGS.attribute_permission %}
-                          output+='<td><a href="'+ item.detail_url +'/preview" class="btn btn-gd-primary">{% trans "Continue to Approve/Deny" %}</a></td>';
-                      {% else %}
-                          output+='<td><a href="'+ item.detail_url +'?user_role=manager" class="btn btn-gd-primary approve-button">{% trans "Continue to Approve/Deny" %}</a></td>';
-                      {% endif %}
 
-                    output+='</tr>';
-                  });
-                  outputpag+='<div>';
-                  outputpag+='<nav>';
-                  outputpag+='<ul class="pagination pull-left">';
-                  var nexturl = meta.next;
-                  //alert(t_count);
-                  var previousurl = meta.previous;
-                  if(previousurl){
-                  outputpag+='<li><a href="javascript:;" id="previousAdminDraftlayers"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
-                  }
-                  if(nexturl){
-                  outputpag+='<li><a href="javascript:;" id="nextAdminDraftlayers"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
-                    }
-                  outputpag+='</ul>';
-                  outputpag+='</nav>';
-                  outputpag+='</div>';
-                   $("#showallAdminDraftlayers").html(output);
-                   $("#showallAdminDraftlayerspag").html(outputpag);
-                   $("#nextAdminDraftlayers").click(function(){
-                        showAdminDraftLayer(nexturl)
-                   });
-                   $("#previousAdminDraftlayers").click(function(){
-                        showAdminDraftLayer(previousurl)
-                   });
-                    },
-                    error: function(xhr, ajaxOptions, thrownError) {
-                        console.log("error");
-                    }
-                });
-        }
-
-        $(document).ready(function(){
-            showAdminDraftLayer();
-        });
- </script>
-<script type="text/javascript" language="JavaScript">
-        function showAdminDatalayers_pending(targeturl){
-            var limit = 25;
-            if(targeturl== undefined){
-                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_layer_api' %}?limit="+ limit +"&resource_state=approved_list&user_type=admin";
-            }
-            else{
-                var url = targeturl;
-            }
-            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
-                $.ajax({
-                    cache: true,
-                    type: 'GET',
-                    url: url,
-                    data: {},
-                    dataType: "json",
-                    success: function(jsondata) {
-                        console.log("success");
-                        //console.log(JSON.stringify(jsondata));
-                    var data = eval(jsondata.objects);
-                    var meta = eval(jsondata.meta);
-                    var t_count = meta.total_count;
-                    var t_limit = meta.limit;
-                    var t_offset = meta.offset;
-                    var t_next = meta.next;
-                    var t_previous = meta.previous;
-                        //alert(t_offset);
-                    var output='';
-                    var outputpag='';
-                    var i =1;
-                    var offset = meta.offset;
-                  $.each(data, function(i, item) {
-                  //alert(item.date_created)
-                    offset = offset + 1;
-                    output+='<tr>';
-                    output+='<td>'+ offset +'</td>';
-                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
-                    output+='<td>'+ item.group +'</td>';
-                    output+='<td>'+ item.owner +'</td>';
-                    output+='<td>'+ item.last_auditor +'</td>';
-                    output+='<td>'+ item.date_updated +'</td>';
-                    output+='<td><a href="'+ item.detail_url +'" class="btn btn-gd-primary">{% trans "Edit" %}</a></td>';
-                    output+='<td><button type="button" class="btn btn-gd-primary" onclick="deleteLayer('+ item.id +')" style="color:#fff;">{% trans "Delete Layer" %}</button></td>';
-                    output+='<td><a href="'+ item.detail_url +'?user_role=manager" class="btn btn-gd-primary">{% trans "Unapproved" %}</a></td>';                    
-                    output+='</tr>';
-                  });
-                  outputpag+='<div>';
-                  outputpag+='<nav>';
-                  outputpag+='<ul class="pagination pull-left">';
-                  var nexturl = meta.next;
-                  //alert(t_count);
-                  var previousurl = meta.previous;
-                  if(previousurl){
-                  outputpag+='<li><a href="javascript:;" id="previousAdminDraftlayers_pen"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
-                  }
-                  if(nexturl){
-                  outputpag+='<li><a href="javascript:;" id="nextAdminDraftlayers_pen"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
-                    }
-                  outputpag+='</ul>';
-                  outputpag+='</nav>';
-                  outputpag+='</div>';
-                   $("#allAdminDraftlayers_pen").html(output);
-                   $("#showallAdminDraftlayerspag_panding").html(outputpag);
-                   $("#nextAdminDraftlayers_pen").click(function(){
-                        showAdminDatalayers_pending(nexturl)
-                   });
-                   $("#previousAdminDraftlayers_pen").click(function(){
-                        showAdminDatalayers_pending(previousurl)
-                   });
-                    },
-                    error: function(xhr, ajaxOptions, thrownError) {
-                        console.log("error");
-                    }
-                });
-        }
-
-        $(document).ready(function(){
-            $("#Approved_list_layers_admin").click(function(){
-                showAdminDatalayers_pending();
-                });
-         });
- </script>
-<script type="text/javascript" language="JavaScript">
-        function showAdminDatalayers_draft(targeturl,counturl){
-            var limit = 25;
-            var counut = counturl;
-            if(targeturl== undefined){
-                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_layer_api' %}?limit="+ limit +"&resource_state=user_draft_list&user_type=admin";
-            }
-            else{
-                var url = targeturl;
-            }
-            if(counturl== undefined){
-                counturl = 0;
-            }
-            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
-                $.ajax({
-                    cache: true,
-                    type: 'GET',
-                    url: url,
-                    data: {},
-                    dataType: "json",
-                    success: function(jsondata) {
-                        console.log("success");
-                        //console.log(JSON.stringify(jsondata));
-                    var data = eval(jsondata.objects);
-                    var meta = eval(jsondata.meta);
-                    var t_count = meta.total_count;
-                    var t_limit = meta.limit;
-                    var t_offset = meta.offset;
-                    var t_next = meta.next;
-                    var t_previous = meta.previous;
-                        //alert(t_offset);
-                    var output='';
-                    var outputpag='';
-                    var offset = meta.offset;
-                  $.each(data, function(i, item) {
-                    counturl = counturl+1;
-                    offset = offset + 1;
-                    output+='<tr>';
-                    output+='<td>'+ offset +'</td>';
-                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
-                    output+='<td>'+ item.group +'</td>';
-                    output+='<td>'+ item.owner +'</td>';
-                    output+='<td>'+ item.date_created +'</td>';
-                    output+='<td><button type="button" class="btn btn-gd-primary" onclick="deleteLayer('+ item.id +')" style="color:#fff;">{% trans "Delete Layer" %}</button></td>';
-                    output+='</tr>';
-                  });
-                  outputpag+='<div>';
-                  outputpag+='<nav>';
-                  outputpag+='<ul class="pagination pull-left">';
-                  var nexturl = meta.next;
-                  //alert(t_count);
-                  var previousurl = meta.previous;
-                  if(previousurl){
-                  outputpag+='<li><a href="javascript:;" id="previousAdminDraftlayers_denied"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
-                  }
-                  if(nexturl){
-                  outputpag+='<li><a href="javascript:;" id="nextAdminDraftlayers_denied"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
-                    }
-                  outputpag+='</ul>';
-                  outputpag+='</nav>';
-                  outputpag+='</div>';
-                   $("#allAdminDraftlayers_denied").html(output);
-                   $("#showallAdminDraftlayerspag_denied").html(outputpag);
-                   $("#nextAdminDraftlayers_denied").click(function(){
-                        showAdminDatalayers_draft(nexturl, counturl)
-                   });
-                   $("#previousAdminDraftlayers_denied").click(function(){
-                        showAdminDatalayers_draft(previousurl)
-                   });
-                    },
-                    error: function(xhr, ajaxOptions, thrownError) {
-                        console.log("error");
-                    }
-                });
-        }
-
-        $(document).ready(function(){
-            $("#Admin_userdraft").click(function(){
-                showAdminDatalayers_draft();
-                });
-         });
- </script>
-
-<script type="text/javascript" language="JavaScript">
-        function showAdminDatalayers_active(targeturl){
-            var limit = 25;
-            if(targeturl== undefined){
-                var url = "{% url 'api_dispatch_list' api_name='api' resource_name='workspace_layer_api' %}?limit="+ limit +"&resource_state=denied_list&user_type=admin";
-            }
-            else{
-                var url = targeturl;
-            }
-            //var url = "{% url 'api_dispatch_list' api_name='api' resource_name='group_activity' %}?limit="+ Plimit +"&group={{ object.slug }}";
-                $.ajax({
-                    cache: true,
-                    type: 'GET',
-                    url: url,
-                    data: {},
-                    dataType: "json",
-                    success: function(jsondata) {
-                        console.log("success");
-                        console.log(JSON.stringify(jsondata));
-                    var data = eval(jsondata.objects);
-                    var meta = eval(jsondata.meta);
-                    var t_count = meta.total_count;
-                    var t_limit = meta.limit;
-                    var t_offset = meta.offset;
-                    var t_next = meta.next;
-                    var t_previous = meta.previous;
-                        //alert(t_offset);
-                    var output='';
-                    var outputpag='';
-                    var i =1;
-                    var offset = meta.offset;
-                  $.each(data, function(i, item) {
-                    offset = offset + 1;
-                    output+='<tr>';
-                    output+='<td>'+ offset +'</td>';
-                    output+='<td><a href="'+ item.detail_url +'">'+ item.title+'</a></td>';
-                    output+='<td>'+ item.group +'</td>';
-                    output+='<td>'+ item.owner +'</td>';
-                    output+='<td>'+ item.last_auditor +'</td>';
-                    output+='<td>'+ item.date_updated +'</td>';
-                    output+='</tr>';
-                  });
-                  outputpag+='<div>';
-                  outputpag+='<nav>';
-                  outputpag+='<ul class="pagination pull-left">';
-                  var nexturl = meta.next;
-                  //alert(t_count);
-                  var previousurl = meta.previous;
-                  if(previousurl){
-                  outputpag+='<li><a href="javascript:;" id="previousAdminDraftlayers_active"><strong><i class="fa fa-angle-left"> <span>Previous</span></i></strong></a></li>';
-                  }
-                  if(nexturl){
-                  outputpag+='<li><a href="javascript:;" id="nextAdminDraftlayers_active"><strong><span>Next</span> <i class="fa fa-angle-right"></i></strong></a></li>';
-                    }
-                  outputpag+='</ul>';
-                  outputpag+='</nav>';
-                  outputpag+='</div>';
-                   $("#allAdminDraftlayers_active").html(output);
-                   $("#showallAdminDraftlayerspag_active").html(outputpag);
-                   $("#nextAdminDraftlayers_active").click(function(){
-                        showAdminDatalayers_active(nexturl)
-                   });
-                   $("#previousAdminDraftlayers_active").click(function(){
-                        showAdminDatalayers_active(previousurl)
-                   });
-                    },
-                    error: function(xhr, ajaxOptions, thrownError) {
-                        console.log("error");
-                    }
-                });
-        }
-
-        $(document).ready(function(){
-            $("#Admin_dined_list").click(function(){
-                showAdminDatalayers_active();
-                });
-         });
- </script>
 {% endblock %}
 
 

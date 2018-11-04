@@ -105,7 +105,7 @@ class AdminWorkspaceDocument(ListView):
     """
 
     model = Document
-    template_name = 'admin/document.html'
+    template_name = 'workspace/admin/document.html'
 
 
     def get_context_data(self, *args, **kwargs):
@@ -125,7 +125,7 @@ class AdminWorkspaceMap(ListView):
     """
 
     model = Map
-    template_name = 'admin/map.html'
+    template_name = 'workspace/admin/map.html'
 
     def get_context_data(self, *args, **kwargs):
         context = super(ListView, self).get_context_data(*args, **kwargs)

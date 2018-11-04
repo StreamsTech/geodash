@@ -980,13 +980,13 @@ class WorkSpaceLayerApi(ModelResource):
                     groups = GroupProfile.objects.filter(groupmember__user=user, groupmember__role='manager')
                     if resource_type == 'layer':
                         if resource_state == 'user_approval_request_list':
-                            return Layer.objects.filter(status='PENDING', group__in=groups).order_by('date_updated')
+                            return Layer.objects.filter(status='PENDING', group__in=groups).order_by('-date_updated')
                         elif resource_state == 'approved_list':
-                            return Layer.objects.filter(status='ACTIVE', group__in=groups).order_by('date_updated')
+                            return Layer.objects.filter(status='ACTIVE', group__in=groups).order_by('-date_updated')
                         elif resource_state == 'user_draft_list':
-                            return Layer.objects.filter(status='DRAFT', group__in=groups).order_by('date_updated')
+                            return Layer.objects.filter(status='DRAFT', group__in=groups).order_by('-date_updated')
                         elif resource_state == 'denied_list':
-                            return Layer.objects.filter(status='DENIED', group__in=groups).order_by('date_updated')
+                            return Layer.objects.filter(status='DENIED', group__in=groups).order_by('-date_updated')
                         else:
                             return nothing
                 else:
