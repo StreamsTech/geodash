@@ -10,7 +10,7 @@ html {
   body {
     margin: 0;
     min-height: 100%;
-    background-color: #f7f7f7;
+    background-color: rgb(246, 246, 246);
   }
 
 body{
@@ -3896,11 +3896,26 @@ footer {
 }
 .slide-img
 {
-    width: 700px;
     height: 600px;
-    position: absolute;
-    right: 0;
-    top: 0;
+    width: 100%;
+position: absolute;
+top: 0;
+    background-color: #fff;
+    -webkit-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.48);
+    -moz-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.48);
+    box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.48);
+}
+.slide-img img
+{
+    max-width: 83%;
+    margin: 0 auto;
+}
+.navbar-fixed-top.active
+{
+    background-color: #fff;
+    -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
+    -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
 }
 .list-pagination
 {
@@ -3933,7 +3948,13 @@ footer {
     margin-top: -100px;
     margin-left: -100px;
 }
-
+.gd-slider
+{
+    background: transparent !important;
+}
+ul.nav li.dropdown:hover > ul.dropdown-menu {
+    display: block;    
+}
 @keyframes fadein {
     from {
         opacity: 0;

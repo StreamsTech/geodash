@@ -140,7 +140,25 @@
 		var tlJsHost = ((window.location.protocol == "https:") ? "https://secure.comodo.com/" : "http://www.trustlogo.com/");
 		document.write(unescape("%3Cscript src='" + tlJsHost + "trustlogo/javascript/trustlogo.js' type='text/javascript'%3E%3C/script%3E"));
 		//]]>
-	  </script>
+      </script>
+      
+      <script>
+            
+          
+            
+            $( document ).ready(function() {
+                $(window).on("scroll", function() {
+                    if($(window).scrollTop() > 40) {
+                        $(".navbar-fixed-top").addClass("active");
+                    } else {
+                        //remove the background property so it comes transparent again (defined in your css)
+                    $(".navbar-fixed-top").removeClass("active");
+                    }
+                });
+            });
+            
+            </script>
+
   </head>
 
   <body class="{% block body_class %}{% endblock %}">
@@ -148,7 +166,7 @@
         <div class="web-page-loader">
             <img src="/static/geonode/images/loader.gif">
         </div>
-        <section class="web-page-content">
+        <section class="web-page-content home">
         <section id="gd-header" class="navsticky">
             <!-- <nav class="navbar navbar-default"> -->
             <nav id="gd-navbar" class="navbar navbar-fixed-top">
@@ -159,7 +177,7 @@
                     </button>
                 </div>
 
-                <div class="container-fluid">
+                <div class="container">
                     <div class="navbar-header">
                         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
                                 data-target="#gd-navbar-collapse" aria-expanded="false">
@@ -244,18 +262,7 @@
                                     </li>
                                     {% block extra_tab %}
                                     {% endblock %}
-                                    <li class="dropdown">
-                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
-                                           aria-haspopup="true" aria-expanded="false">{% trans "Organizations" %}<span
-                                                class="caret"></span></a>
-                                        <!--<a href="#">explore<span class="sr-only">(current)</span></a> -->
-                                        <ul class="dropdown-menu">
-                                            <li id="nav_maps">
-                                                <a href="{% url "group_list" %}">{% trans "Explore Organizations" %}</a>
-                                            </li>
-
-                                        </ul>
-                                    </li>
+                                  
                                     {% if request.user.is_manager_of_any_group and FRONT_END_SETTINGS.templates_base.administration_header_menu %}
                                         <li class="dropdown">
                                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
@@ -283,7 +290,7 @@
                                         </li>
                                     {% endif %}
 
-                                    <li><a href="{% url "news-list" %}">{% trans "NEWS" %}</a></li>
+                                    <!-- <li><a href="{% url "news-list" %}">{% trans "NEWS" %}</a></li> -->
                                     {% if user.is_authenticated %}
                                         <li class="notification">
                                             <a class="dashboard-btn" href="{% url "_dashboard" %}" title="Dashboard"
@@ -382,13 +389,13 @@
                                 {% if not user.is_authenticated %}
                                     <li class="nav-search-index">
                                         <a href="#" data-toggle="modal" data-target="#SigninModal" role="button"
-                                           class="btn btn-default btn-signin">SIGN IN</a>
+                                           class="btn btn-link" style="color: #fff">SIGN IN</a>
                                     </li>
                                 {% endif %}
                                 {% if not user.is_authenticated and REGISTRATION_OPEN and FRONT_END_SETTINGS.register %}
                                     <li class="normal-fon" style="margin-left: 10px">
                                         <a href="#" data-toggle="modal" data-target="#SignupModal" role="button"
-                                           href="{% url "account_signup" %}" class="btn btn-success">
+                                           href="{% url "account_signup" %}" class="btn btn-link" style="color: #fff">
                                             {#                                {% trans "Register" %}#}
                                             REGISTER
                                         </a>
@@ -460,7 +467,7 @@
                                     <span>
 
                                            <a id="lang-selection" href="javascript:;" title="{% trans "LANGUAGE" %}"
-                                              class="btn btn-primary btn-language">
+                                              class="btn btn-link" style="color: #fff">
                                                {% trans "language" %}
                                            </a>
                                        </span>
@@ -1172,7 +1179,7 @@
                 $('.web-page-content').css({
                     opacity: 0.0,
                     visibility: "visible",
-                    backgroundColor: '#3896e2'
+                    
                 }).animate({opacity: 1.0, backgroundColor: 'white'}, {duration: 1000});
             });
         });
