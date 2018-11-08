@@ -2,6 +2,10 @@
 {% load i18n %}
 {% load base_tags %}
 {% load activity_tags social_tags %}
+
+
+{% block body_class %}home-page explore{% endblock %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,39 +65,39 @@ $('#carousel-home').carousel();
                     <h1 style="margin-top:140px;">
                        Geospatial data management & visualization platform
                     </h1>
-                    <span  style="color: rgb(131, 146, 150);font-size:23px;">Sed ut perspiciatis unde omnis iste natus error sit voluptatem</span>
+                    <span  style="color: rgb(131, 146, 150);font-size:23px;">Sed ut perspiciatis unde omnis iste<br/> natus error sit voluptatem</span>
 
                     <div class="row placeholders" style="margin-top: 60px;">
-                            <a href="{% url "group_list" %}">
-                            <div class="col-xs-6 col-sm-3 placeholder text-center">
-                                    <span class="glyphicon glyphicon-tint" style="font-size:44px;" aria-hidden="true"></span>
+                            <!-- <a href="{% url "group_list" %}">
+                            <div class="col-xs-6 col-sm-3 count-ico text-center">
+                                    <span class="glyphicon glyphicon-tint" aria-hidden="true"></span>
                               <h4>{% trans "Organizations" %}</h4>
-                              <span class="text-muted">{{ group_counter }}</span>
+                              <span class="count">{{ group_counter }}</span>
 
                             </div>
-                            </a>
+                            </a> -->
 
                             <a href="{% url "layer_browse" %}">
-                            <div class="col-xs-6 col-sm-3 placeholder text-center">
-                                    <span class="glyphicon glyphicon-unchecked" style="font-size:44px;" aria-hidden="true"></span>
+                            <div class="col-xs-6 col-sm-3 count-ico text-center">
+                                    <span class="glyphicon glyphicon-unchecked" aria-hidden="true"></span>
                               <h4>{% trans "Layers" %}</h4>
-                              <span class="text-muted">{{ layer_counter }}</span>
+                              <span class="count">{{ layer_counter }}</span>
                              
                             </div>
                         </a>
                         <a href="{% url "maps_browse" %}">
-                            <div class="col-xs-6 col-sm-3 placeholder text-center">
-                                    <span class="glyphicon glyphicon-map-marker" style="font-size:44px;" aria-hidden="true"></span>
+                            <div class="col-xs-6 col-sm-3 count-ico text-center">
+                                    <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
                               <h4>{% trans "Maps" %}</h4>
-                              <span class="text-muted">{{ map_counter }}</span>
+                              <span class="count">{{ map_counter }}</span>
                              
                             </div>
                            </a>
                            <a href="{% url "profile_browse" %}">
-                            <div class="col-xs-6 col-sm-3 placeholder text-center">
-                                    <span class="glyphicon glyphicon-user" style="font-size:44px;" aria-hidden="true"></span>
+                            <div class="col-xs-6 col-sm-3 count-ico text-center">
+                                    <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
                               <h4>{% trans "Users" %}</h4>
-                              <span class="text-muted">{{ user_counter }}</span>
+                              <span class="count">{{ user_counter }}</span>
                              
                             </div>
                             </a>
@@ -106,6 +110,7 @@ $('#carousel-home').carousel();
 
 
                <div class="col-md-7">
+<div class="img-box">
 
                     <ol class="carousel-indicators">
                             <li data-target="#carousel-home" data-slide-to="0" class="active"></li>
@@ -129,7 +134,7 @@ $('#carousel-home').carousel();
                             <div class="slide-img">
                                 <img src="/uploaded/{{ slider.image }}" alt="" class="img-responsive" />
 
-                                <div class="container-fluid">
+                                
                                         <div class="carousel-caption">
                                             <div class="gd-slider-title">{{ slider.title }}</div>
                                             <div class="gd-slider-msg">
@@ -141,7 +146,7 @@ $('#carousel-home').carousel();
                                                 <a role="button" href="#{{slider.connect_section.slug}}" class="btn btn-success">Learn more</a>
                                             </div> -->
                                         </div>
-                                    </div>
+                                   
 
                             </div>
                          
@@ -150,7 +155,10 @@ $('#carousel-home').carousel();
                           </div>
                       {% endif %}
                 {% endfor %}
-    </div>
+    
+            </div>
+</div>
+
 
 
                 </div>

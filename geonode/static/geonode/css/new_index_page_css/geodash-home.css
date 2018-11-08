@@ -1,6 +1,5 @@
 body {
 	font-family: 'Roboto', sans-serif;
-	padding-top: 0;
 	padding-bottom: 248px;
 	overflow-x: hidden;
 }
@@ -28,7 +27,7 @@ body {
 	background:transparent;
 	text-align: center;
 margin-top: 75px;
-margin-bottom: 45px;
+margin-bottom: 0;
 
 
 }
@@ -89,13 +88,7 @@ margin-bottom: 45px;
 	background-color: #2196c7;
 	color: #fff;
 }
-footer {
-	background-color: #1c2025;
-	color: #a8aeb7;
-	position: absolute;
-	bottom: 0;
-	width: 100%;
-}
+
 .social ul {
 	list-style: outside none none;
 	margin: 0;
@@ -204,10 +197,10 @@ footer {
 	margin-left: 15px;
 }
 
-.count {
+span.count {
 	padding: 5px;
-	border-right: 1px solid #0085aa;
-	border-left: 1px solid #19acd4;
+	color: #000 !important;
+	font-size: 34px;
 }
 .count h2 {
 	margin: 6px 0 0;
@@ -219,6 +212,15 @@ footer {
 	margin: 0;
 	color: #b1d9e4;
 	font-size: 20px;
+}
+.count-ico span
+{
+	color: #3896e2;
+	font-size: 33px;
+}
+.count-ico
+{
+	color: rgb(54, 54, 54);
 }
 .gallery-carousel-control-right {
 	width: 50px;
@@ -1394,3 +1396,24 @@ ul.offer-list li {
 			}
 	
 	}
+
+
+	@media (max-width: 1066px) {
+		#carousel-home {
+			margin-bottom: 120px;
+	}
+
+}
+
+@media (max-width: 1000px) {
+	body {
+		padding-top: 100px;
+}
+.navbar-fixed-top
+{
+	background-color: #fff;
+}
+
+}
+
+

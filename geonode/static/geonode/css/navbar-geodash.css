@@ -1,6 +1,6 @@
 body {
 
-    padding-bottom: 108px !important;
+    padding-bottom: 0 !important;
 
 }
 footer
@@ -11,12 +11,23 @@ footer
 
 	margin-bottom: 0;
 }
-.navbar-fixed-top
+body.home-page .navbar-fixed-top
 {
     height: 98px;
     top: 0;
     transition: all 0.2s ease-in-out;
     padding: 20px 0;
+}
+.navbar-fixed-top
+{
+    height: 70px;
+    top: 0;
+    transition: all 0.2s ease-in-out;
+    padding: 0;
+}
+.navbar-fixed-top.active a.btn-link
+{
+    color: #000 !important;
 }
 .navbar-brand {
 	background-image: url(surfgis-logo.png);
@@ -61,6 +72,11 @@ footer
 .top-site-search
 {
     width: 233px;
+}
+.top-site-search .btn-primary
+{
+   background-color: rgb(39, 39, 39);
+   border-color: #000;
 }
 .profile_picture img
 {
