@@ -251,6 +251,7 @@ span.count {
 	width: 100%;
 	border: 1px solid #d9d9d9;
 	padding: 15px;
+	border-radius: 10px;
 }
 .box img {
 	-webkit-transition: all 300ms ease-out;
@@ -1409,10 +1410,24 @@ ul.offer-list li {
 	body {
 		padding-top: 100px;
 }
-.navbar-fixed-top
+body.home-page .navbar-fixed-top
 {
 	background-color: #fff;
+	-webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
+	-moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
+	box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
+	height: 70px;
+	padding: 0;
+
 }
+body.home-page {
+	
+			padding-top: 70px;
+		}
+		body.home-page .carousel .item
+    {
+        height: auto !important;
+    }
 
 }
 

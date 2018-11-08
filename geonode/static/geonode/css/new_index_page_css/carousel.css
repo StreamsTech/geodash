@@ -124,6 +124,7 @@ height: 85px;
 			margin-right: 30px;
 			margin-top: 15px;
 			height: 22px;
+			transition: all 0.25s ease;
 		
 		}
 .slideImage {

@@ -136,7 +136,12 @@ body.home-page .navbar-fixed-top
     top: 55px !important;
 }
 .navbar-nav > li > .dropdown-menu {
-	border-radius: 0;
+    border-radius: 10px;
+    -webkit-transition: opacity 1s ease-in-out;
+    -moz-transition: opacity 1s ease-in-out;
+    -ms-transition: opacity 1s ease-in-out;
+    -o-transition: opacity 1s ease-in-out;
+    transition: opacity 1s ease-in-out;
 }
 .nav > li > a:focus, .nav > li > a:hover {
 	background: none;
