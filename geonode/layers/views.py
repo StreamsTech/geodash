@@ -607,7 +607,6 @@ def layer_detail(request, layername, template='layers/layer_detail.html'):
         context_dict["social_links"] = build_social_links(request, layer)
 
     if str(layer.user_data_epsg) and str(layer.user_data_epsg) != 'None':
-        import pdb; pdb.set_trace()
         with connection.cursor() as cursor:
             cursor.execute("SELECT srtext FROM spatial_ref_sys WHERE srid = %s", [
                            str(layer.user_data_epsg)])
