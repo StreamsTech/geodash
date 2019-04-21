@@ -226,7 +226,7 @@ def layer_upload(request, template='upload/layer_upload.html'):
                     if file.endswith(".prj"):
                         prj_file_name = file
 
-                epsg_code = get_epsg_code(tmp_dir + '/' + prj_file_name)
+                epsg_code = '0000' #get_epsg_code(tmp_dir + '/' + prj_file_name)
                 if epsg_code:
                     if epsg_code != '4326':
                         out['warning'] = "Your uploaded layers projection is not in epsg:4326 " \
@@ -250,7 +250,7 @@ def layer_upload(request, template='upload/layer_upload.html'):
                 # Upload files
                 upload_files(tmp_dir, request.FILES)
 
-                epsg_code = get_epsg_code(tmp_dir + '/' + request.FILES['prj_file'].name)
+                epsg_code = '0000' #get_epsg_code(tmp_dir + '/' + request.FILES['prj_file'].name)
                 if epsg_code:
                     if epsg_code != '4326':
                         out['warning'] = "Your uploaded layers projection is not in epsg:4326 " \
