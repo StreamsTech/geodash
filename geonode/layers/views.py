@@ -229,9 +229,9 @@ def layer_upload(request, template='upload/layer_upload.html'):
                 epsg_code = '0000' #get_epsg_code(tmp_dir + '/' + prj_file_name)
                 if epsg_code:
                     if epsg_code != '4326':
-                        out['warning'] = "Your uploaded layers projection is not in epsg:4326 " \
-                                         "and it will be converted to epsg:4326"
+                        out['warning'] = "Your layer has been uploaded in the projection epsg:4326"
                     data_dict = reprojection(tmp_dir, shp_file_name)
+                    epsg_code = '4326'
                 else:
                     out['success'] = False
                     out['errors'] = "Geodash can not detect projection for the uploaded layer" \
@@ -253,9 +253,9 @@ def layer_upload(request, template='upload/layer_upload.html'):
                 epsg_code = '0000' #get_epsg_code(tmp_dir + '/' + request.FILES['prj_file'].name)
                 if epsg_code:
                     if epsg_code != '4326':
-                        out['warning'] = "Your uploaded layers projection is not in epsg:4326 " \
-                                         "and it will be converted to epsg:4326"
+                        out['warning'] = "Your layer has been uploaded in the projection epsg:4326"
                     data_dict = reprojection(tmp_dir, str(request.FILES['base_file'].name))
+                    epsg_code = '4326'
                 else:
                     out['success'] = False
                     out['errors'] = "Geodash can not detect projection for the uploaded layer" \
@@ -607,6 +607,7 @@ def layer_detail(request, layername, template='layers/layer_detail.html'):
         context_dict["social_links"] = build_social_links(request, layer)
 
     if str(layer.user_data_epsg) and str(layer.user_data_epsg) != 'None':
+        import pdb; pdb.set_trace()
         with connection.cursor() as cursor:
             cursor.execute("SELECT srtext FROM spatial_ref_sys WHERE srid = %s", [
                            str(layer.user_data_epsg)])
